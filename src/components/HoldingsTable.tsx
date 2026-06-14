@@ -17,8 +17,16 @@ interface HoldingsTableProps {
 export default function HoldingsTable({ holdings }: HoldingsTableProps) {
   if (holdings.length === 0) {
     return (
-      <div className="bg-white p-12 rounded-2xl text-center text-slate-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        You don't have any holdings yet. Execute a trade to get started.
+      <div className="bg-white p-16 rounded-2xl flex flex-col items-center justify-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </div>
+        <h4 className="text-lg font-bold text-slate-900 mb-2">No assets yet</h4>
+        <p className="text-slate-500 font-medium max-w-sm">
+          Your portfolio is empty. Head over to the Trade tab to buy your first cryptocurrency or stock!
+        </p>
       </div>
     );
   }

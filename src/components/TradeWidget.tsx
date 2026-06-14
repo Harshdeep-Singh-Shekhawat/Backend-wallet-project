@@ -22,6 +22,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
   const currentPrice = prices[symbol] || 0;
   const numAmount = parseFloat(amount) || 0;
   const estimatedValue = numAmount * currentPrice;
+  const balanceAfterTrade = activeTab === 'BUY' ? fiatBalance - estimatedValue : fiatBalance + estimatedValue;
 
   const handleTrade = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,11 +127,19 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
           />
         </div>
 
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex justify-between items-center">
-          <span className="text-sm text-slate-500 font-medium">Estimated Cost</span>
-          <span className="font-bold text-lg text-slate-900">
-            ${estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-slate-500 font-medium">Estimated Cost</span>
+            <span className="font-bold text-lg text-slate-900">
+              ${estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div className="flex justify-between items-center pt-3 border-t border-slate-200 border-dashed">
+            <span className="text-sm text-slate-500 font-medium">Balance After Trade</span>
+            <span className={cn("font-bold text-sm", balanceAfterTrade < 0 ? "text-red-600" : "text-slate-700")}>
+              ${balanceAfterTrade.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
         </div>
 
         {error && (

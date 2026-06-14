@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import PortfolioOverview from '@/components/PortfolioOverview';
 import HoldingsTable, { Holding } from '@/components/HoldingsTable';
 import TradeWidget from '@/components/TradeWidget';
+import AssetChart from '@/components/AssetChart';
 import { Loader2, ArrowUpRight, ArrowDownRight, Wallet as WalletIcon, Clock, Shield, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -75,6 +76,12 @@ export default function App() {
   const totalPnL = totalHoldingsValue - totalCost;
   const pnlPercentage = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
 
+  // Prepare data for the pie chart
+  const chartData = [
+    { name: 'Available Cash', value: fiatBalance },
+    ...enrichedHoldings.map((h) => ({ name: h.symbol, value: h.quantity * h.currentPrice }))
+  ];
+
   const handleWalletAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!walletAction || !walletAmount || parseFloat(walletAmount) <= 0) return;
@@ -127,14 +134,24 @@ export default function App() {
               pnlPercentage={pnlPercentage}
             />
             
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-slate-900">Your Assets</h3>
-                <button onClick={() => setActiveTab('Trade')} className="text-sm text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 font-semibold transition-colors px-4 py-2 rounded-lg">
-                  Trade Now
-                </button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-slate-900">Your Assets</h3>
+                  <button onClick={() => setActiveTab('Trade')} className="text-sm text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 font-semibold transition-colors px-4 py-2 rounded-lg">
+                    Trade Now
+                  </button>
+                </div>
+                <HoldingsTable holdings={enrichedHoldings} />
               </div>
-              <HoldingsTable holdings={enrichedHoldings} />
+              <div className="lg:col-span-1">
+                <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full flex flex-col">
+                  <h3 className="text-lg font-bold text-slate-900 mb-6">Asset Allocation</h3>
+                  <div className="flex-1 flex items-center justify-center">
+                    <AssetChart data={chartData} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -204,7 +221,10 @@ export default function App() {
                <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none text-blue-600">
                  <WalletIcon size={250} />
                </div>
-               <h3 className="text-sm font-semibold text-slate-500 mb-2">Available Cash</h3>
+               <div className="flex items-center gap-2 mb-2">
+                 <h3 className="text-sm font-semibold text-slate-500">Available Cash</h3>
+               </div>
+               <p className="text-xs text-slate-400 font-medium mb-4 max-w-sm">This is your fiat balance used to buy assets. Add funds to start trading.</p>
                <div className="text-5xl font-bold text-slate-900 tracking-tight mb-8">
                  ${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                </div>
