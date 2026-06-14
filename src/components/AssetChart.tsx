@@ -1,52 +1,68 @@
 'use client';
 
+import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import styles from './AssetChart.module.css';
 
-interface AssetChartProps {
-  data: { name: string; value: number }[];
+interface AssetData {
+  name: string;
+  value: number;
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'];
+interface AssetChartProps {
+  data: AssetData[];
+}
+
+// Monochrome/Grayscale palette for the minimalist black & white theme
+const COLORS = ['#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#1a1a1a'];
 
 export default function AssetChart({ data }: AssetChartProps) {
-  // Filter out any 0 values
-  const validData = data.filter((d) => d.value > 0);
+  // Filter out zero values so they don't clutter the chart
+  const activeData = data.filter(item => item.value > 0);
 
-  if (validData.length === 0) {
+  if (activeData.length === 0) {
     return (
-      <div className="h-64 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
-        <p className="font-medium text-sm">No assets to visualize</p>
+      <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>
+        No asset data available
       </div>
     );
   }
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip">
+          <p style={{ fontWeight: 800, margin: 0 }}>{payload[0].name}</p>
+          <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>
+            ${payload[0].value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="h-72 w-full">
+    <div className={styles.container}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={validData}
+            data={activeData}
             cx="50%"
             cy="50%"
             innerRadius={60}
-            outerRadius={90}
-            paddingAngle={5}
+            outerRadius={100}
+            paddingAngle={2}
             dataKey="value"
-            stroke="none"
+            stroke="var(--color-border)"
+            strokeWidth={1}
           >
-            {validData.map((entry, index) => (
+            {activeData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip 
-            formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Value']}
-            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-          />
-          <Legend 
-            verticalAlign="bottom" 
-            height={36}
-            iconType="circle"
-          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend verticalAlign="bottom" height={36} iconType="circle" />
         </PieChart>
       </ResponsiveContainer>
     </div>

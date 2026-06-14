@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import styles from './TradeWidget.module.css';
 
 interface TradeWidgetProps {
   fiatBalance: number;
@@ -65,54 +65,48 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
   };
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+    <div className={`glass-panel ${styles.widget}`}>
       
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-slate-900">Trade</h3>
-        <div className="text-xs text-slate-500 font-medium bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-          Available: <span className="text-slate-900 font-bold">${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      <div className={styles.header}>
+        <h3 className={styles.title}>Trade</h3>
+        <div className={styles.availableBadge}>
+          Available: <span className={styles.availableAmount}>${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex p-1 bg-slate-100 rounded-xl mb-6">
+      <div className={styles.tabs}>
         <button
           onClick={() => { setActiveTab('BUY'); setError(''); setSuccessMsg(''); }}
-          className={cn(
-            "flex-1 py-2.5 text-sm font-bold rounded-lg transition-all",
-            activeTab === 'BUY' ? "bg-green-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-900"
-          )}
+          className={`${styles.tab} ${activeTab === 'BUY' ? styles.tabBuyActive : ''}`}
         >
           Buy
         </button>
         <button
           onClick={() => { setActiveTab('SELL'); setError(''); setSuccessMsg(''); }}
-          className={cn(
-            "flex-1 py-2.5 text-sm font-bold rounded-lg transition-all",
-            activeTab === 'SELL' ? "bg-red-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-900"
-          )}
+          className={`${styles.tab} ${activeTab === 'SELL' ? styles.tabSellActive : ''}`}
         >
           Sell
         </button>
       </div>
 
-      <form onSubmit={handleTrade} className="space-y-5">
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Asset Symbol</label>
+      <form onSubmit={handleTrade} className={styles.form}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Asset Symbol</label>
           <input
             type="text"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             placeholder="e.g. BTC"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 text-[15px] font-semibold focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase placeholder:text-slate-400 placeholder:font-normal"
+            className={`${styles.input} ${styles.inputUpperCase}`}
             required
           />
         </div>
 
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-semibold text-slate-700">Quantity</label>
-            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+        <div className={styles.formGroup}>
+          <div className={styles.labelWrapper}>
+            <label className={styles.label}>Quantity</label>
+            <span className={styles.priceBadge}>
               {currentPrice ? `@ $${currentPrice.toLocaleString()}` : 'Loading...'}
             </span>
           </div>
@@ -122,34 +116,34 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 text-[15px] font-semibold focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-400 placeholder:font-normal"
+            className={styles.input}
             required
           />
         </div>
 
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-500 font-medium">Estimated Cost</span>
-            <span className="font-bold text-lg text-slate-900">
+        <div className={styles.summaryBox}>
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryLabel}>Estimated Cost</span>
+            <span className={styles.summaryValueBig}>
               ${estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
-          <div className="flex justify-between items-center pt-3 border-t border-slate-200 border-dashed">
-            <span className="text-sm text-slate-500 font-medium">Balance After Trade</span>
-            <span className={cn("font-bold text-sm", balanceAfterTrade < 0 ? "text-red-600" : "text-slate-700")}>
+          <div className={styles.summaryRowDivider}>
+            <span className={styles.summaryLabel}>Balance After Trade</span>
+            <span className={balanceAfterTrade < 0 ? styles.summaryValueNegative : styles.summaryValueSmall}>
               ${balanceAfterTrade.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
 
         {error && (
-          <div className="text-red-600 text-sm font-medium bg-red-50 p-3.5 rounded-xl border border-red-100">
+          <div className={styles.messageError}>
             {error}
           </div>
         )}
 
         {successMsg && (
-          <div className="text-green-700 text-sm font-medium bg-green-50 p-3.5 rounded-xl border border-green-100">
+          <div className={styles.messageSuccess}>
             {successMsg}
           </div>
         )}
@@ -157,15 +151,9 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
         <button
           type="submit"
           disabled={isLoading || currentPrice <= 0 || numAmount <= 0}
-          className={cn(
-            "w-full py-4 rounded-xl font-bold text-[15px] flex items-center justify-center transition-all shadow-md",
-            activeTab === 'BUY' 
-              ? "bg-green-600 text-white hover:bg-green-700 disabled:bg-green-300 shadow-green-600/20" 
-              : "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300 shadow-red-600/20",
-            (isLoading || currentPrice <= 0 || numAmount <= 0) && "cursor-not-allowed opacity-70"
-          )}
+          className={`${styles.submitBtn} ${activeTab === 'BUY' ? styles.submitBtnBuy : styles.submitBtnSell}`}
         >
-          {isLoading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
+          {isLoading && <Loader2 className={styles.loader} size={20} />}
           {activeTab === 'BUY' ? 'Buy Now' : 'Sell Now'}
         </button>
       </form>

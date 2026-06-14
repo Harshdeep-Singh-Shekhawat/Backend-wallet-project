@@ -1,5 +1,6 @@
-import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, Wallet, LineChart, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import styles from './PortfolioOverview.module.css';
+import globalStyles from '../app/globals.css'; // Just to ensure globals are loaded if needed, though Nextjs does this
 
 interface PortfolioOverviewProps {
   totalValue: number;
@@ -10,39 +11,50 @@ interface PortfolioOverviewProps {
 
 export default function PortfolioOverview({ totalValue, fiatBalance, totalPnL, pnlPercentage }: PortfolioOverviewProps) {
   const isProfit = totalPnL >= 0;
+  const totalBalance = totalValue + fiatBalance;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow">
-        <div className="text-slate-500 text-sm font-medium mb-2">
-          Total Balance
+    <div className={styles.grid}>
+      {/* Total Balance */}
+      <div className={`glass-panel ${styles.card}`}>
+        <div className={styles.cardHeader}>
+          <div className={styles.iconWrapper}>
+            <Wallet size={20} />
+          </div>
+          <span className={styles.cardTitle}>Total Balance</span>
         </div>
-        <div className="text-4xl font-bold text-slate-900 tracking-tight">
-          ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <div className={styles.cardValue}>
+          ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
       </div>
 
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow">
-        <div className="text-slate-500 text-sm font-medium mb-2 flex items-center gap-2">
-          <Wallet size={16} className="text-blue-500" /> Buying Power
+      {/* Buying Power (Fiat) */}
+      <div className={`glass-panel ${styles.card}`}>
+        <div className={styles.cardHeader}>
+          <div className={styles.iconWrapper}>
+            <LineChart size={20} />
+          </div>
+          <span className={styles.cardTitle}>Buying Power</span>
         </div>
-        <div className="text-4xl font-bold text-slate-900 tracking-tight">
+        <div className={styles.cardValue}>
           ${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
       </div>
 
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow">
-        <div className="text-slate-500 text-sm font-medium mb-2">
-          Total Returns
+      {/* Total Returns */}
+      <div className={`glass-panel ${styles.card}`}>
+        <div className={styles.cardHeader}>
+          <div className={styles.iconWrapper}>
+            <TrendingUp size={20} />
+          </div>
+          <span className={styles.cardTitle}>Total Returns</span>
         </div>
-        <div className="flex items-end gap-3">
-          <div className={cn("text-4xl font-bold tracking-tight", isProfit ? "text-emerald-600" : "text-rose-600")}>
-            {isProfit ? '+' : '-'}${Math.abs(totalPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <div className={cn("flex items-center text-sm font-semibold mb-1.5 px-2 py-1 rounded-lg", isProfit ? "text-emerald-700 bg-emerald-50" : "text-rose-700 bg-rose-50")}>
-            {isProfit ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
-            {Math.abs(pnlPercentage).toFixed(2)}%
-          </div>
+        <div className={styles.cardValue}>
+          {isProfit ? '+' : '-'}${Math.abs(totalPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </div>
+        <div className={`${styles.pnlInfo} ${isProfit ? styles.positive : styles.negative}`}>
+          {isProfit ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+          {Math.abs(pnlPercentage).toFixed(2)}%
         </div>
       </div>
     </div>

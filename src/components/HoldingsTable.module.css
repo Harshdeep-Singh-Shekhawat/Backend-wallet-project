@@ -1,0 +1,146 @@
+.container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  padding: 16px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: var(--glass-border);
+}
+
+.thRight {
+  text-align: right;
+}
+
+.tr {
+  transition: background-color 0.2s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tr:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.td {
+  padding: 20px 24px;
+}
+
+.tdRight {
+  text-align: right;
+}
+
+.assetInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.assetIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.assetSymbol {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-text-primary);
+}
+
+.assetName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.valuePrimary {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.valueSecondary {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.pnlPositive {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-success);
+}
+
+.pnlNegative {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-danger);
+}
+
+.pnlPercentPositive {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success);
+  opacity: 0.8;
+}
+
+.pnlPercentNegative {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-danger);
+  opacity: 0.8;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 64px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--color-text-muted);
+}
+
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.emptyDesc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  max-width: 320px;
+  line-height: 1.5;
+}

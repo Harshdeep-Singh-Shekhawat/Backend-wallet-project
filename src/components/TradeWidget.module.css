@@ -1,0 +1,241 @@
+.widget {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.availableBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.availableAmount {
+  color: var(--color-text-primary);
+  font-weight: 800;
+  margin-left: 4px;
+}
+
+.tabs {
+  display: flex;
+  padding: 4px;
+  background-color: var(--color-surface);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid var(--color-border);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tabBuyActive {
+  background-color: var(--color-success);
+  color: #fff;
+}
+
+.tabSellActive {
+  background-color: var(--color-danger);
+  color: #fff;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.labelWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.priceBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.input {
+  width: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.inputUpperCase {
+  text-transform: uppercase;
+}
+
+.summaryBox {
+  background-color: var(--color-surface);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summaryRowDivider {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.summaryLabel {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.summaryValueBig {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--color-text-primary);
+}
+
+.summaryValueSmall {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.summaryValueNegative {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-danger);
+}
+
+.messageError {
+  color: var(--color-danger);
+  font-size: 14px;
+  font-weight: 500;
+  background-color: var(--color-danger-bg);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.messageSuccess {
+  color: var(--color-success);
+  font-size: 14px;
+  font-weight: 500;
+  background-color: var(--color-success-bg);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  color: #fff;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitBtnBuy {
+  background-color: var(--color-success);
+}
+.submitBtnBuy:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.submitBtnSell {
+  background-color: var(--color-danger);
+}
+.submitBtnSell:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.loader {
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

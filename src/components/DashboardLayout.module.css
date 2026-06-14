@@ -1,0 +1,168 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background-color: var(--color-bg);
+  border-right: var(--glass-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.logoArea {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-text);
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.logoText {
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.nav {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+}
+
+.navItem:hover {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.navItem.active {
+  background-color: var(--color-surface-active);
+  color: var(--color-accent);
+}
+
+.footer {
+  padding: 24px;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 0.2s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.logoutBtn:hover {
+  color: var(--color-text-primary);
+}
+
+/* Main Content Area */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Important for flex-child text truncation */
+}
+
+.header {
+  padding: 24px 40px;
+  border-bottom: var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.headerTitle {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.notificationBtn {
+  position: relative;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.notificationBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-danger);
+  border-radius: 50%;
+  border: 2px solid var(--color-bg);
+}
+
+.userInfo {
+  text-align: right;
+}
+
+.userName {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.userStatus {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-success);
+  letter-spacing: 0.5px;
+}
+
+.content {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+}

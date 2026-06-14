@@ -1,0 +1,583 @@
+.container {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.loading {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.loader {
+  animation: spin 1s linear infinite;
+  width: 32px;
+  height: 32px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.sectionSpace {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.tradeBtn {
+  font-size: 14px;
+  color: var(--color-accent);
+  background-color: var(--color-surface);
+  border: var(--glass-border);
+  font-weight: 600;
+  transition: all 0.2s;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tradeBtn:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .colSpan2 {
+    grid-column: span 2 / span 2;
+  }
+}
+
+.card {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTitleBig {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.cardDesc {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.marketList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marketRow {
+  padding: 16px;
+  border-radius: 12px;
+  border: var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+  cursor: pointer;
+  background-color: var(--color-surface);
+}
+
+.marketRow:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.marketRowSelected {
+  border-color: var(--color-accent);
+  background-color: var(--color-surface-active);
+  transform: scale(1.01);
+}
+
+.marketIconArea {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.marketIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.marketSymbol {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.marketType {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.marketPriceArea {
+  text-align: right;
+}
+
+.marketPrice {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.marketTrend {
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.trendUp {
+  color: var(--color-success);
+}
+
+.trendDown {
+  color: var(--color-danger);
+}
+
+.stickyWidget {
+  position: sticky;
+  top: 96px;
+}
+
+/* Wallets Tab */
+.walletCard {
+  position: relative;
+  overflow: hidden;
+}
+
+.walletBgIcon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 48px;
+  opacity: 0.05;
+  pointer-events: none;
+  color: var(--color-accent);
+}
+
+.walletLabelArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.walletLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.walletDesc {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+
+.walletBalance {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 32px;
+}
+
+.walletActions {
+  display: flex;
+  gap: 16px;
+}
+
+.btnPrimary {
+  background-color: var(--color-text-primary);
+  color: var(--color-bg);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btnPrimary:hover {
+  background-color: var(--color-text-secondary);
+}
+
+.btnSecondary {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btnSecondary:hover {
+  background-color: var(--color-surface);
+}
+
+.formBox {
+  max-width: 448px;
+  background-color: var(--color-surface);
+  padding: 24px;
+  border-radius: 16px;
+  border: var(--glass-border);
+  position: relative;
+  z-index: 10;
+}
+
+.formTitle {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  text-transform: capitalize;
+}
+
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+}
+
+.formError {
+  color: var(--color-danger);
+  font-size: 14px;
+  font-weight: 500;
+  background-color: var(--color-danger-bg);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  margin-bottom: 16px;
+}
+
+.formButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.btnSubmit {
+  flex: 1;
+  background-color: var(--color-text-primary);
+  color: var(--color-bg);
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btnSubmit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btnCancel {
+  padding: 0 24px;
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  font-weight: 700;
+  border-radius: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btnCancel:hover {
+  background-color: var(--color-surface);
+}
+
+/* Activity Feed */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activityEmpty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: 64px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--color-surface);
+  border-radius: 12px;
+  border: 1px dashed var(--color-border);
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: var(--color-surface);
+  border-radius: 12px;
+  border: var(--glass-border);
+  transition: all 0.2s;
+}
+
+.activityRow:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.activityIconArea {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.activityIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+}
+
+.iconDeposit { color: var(--color-success); }
+.iconWithdraw { color: var(--color-danger); }
+
+.activityTitle {
+  font-weight: 800;
+}
+
+.activitySub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.activityRight {
+  text-align: right;
+}
+
+.activityAmountDeposit {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--color-success);
+}
+
+.activityAmountWithdraw {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--color-danger);
+}
+
+.activityDate {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Settings Tab */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 768px) {
+  .settingsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .settingsSidebar {
+    grid-column: span 1 / span 1;
+  }
+  .settingsContent {
+    grid-column: span 3 / span 3;
+  }
+}
+
+.settingsMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settingsMenuBtn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settingsMenuBtn:hover {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.settingsMenuBtnActive {
+  background-color: var(--color-surface-active);
+  color: var(--color-accent);
+}
+
+.settingsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settingsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settingsItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.settingsLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settingsValue {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.badgeVerified {
+  display: inline-flex;
+  padding: 4px 12px;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 6px;
+}
+
+.securityBox {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .securityBox {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.securityInfo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.securityIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+}
+
+.securityTitle {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.securityDesc {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
