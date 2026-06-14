@@ -1,0 +1,104 @@
+import { NextResponse } from 'next/server';
+import yahooFinance from 'yahoo-finance2';
+
+// Simple in-memory cache to prevent rate limits
+// In production, use Redis or similar
+const cache: Record<string, { price: number; timestamp: number }> = {};
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+const COINGECKO_MAP: Record<string, string> = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  SOL: 'solana',
+  DOGE: 'dogecoin',
+  ADA: 'cardano',
+};
+
+async function fetchCryptoPrices(symbols: string[]) {
+  const ids = symbols.map((s) => COINGECKO_MAP[s.toUpperCase()]).filter(Boolean);
+  if (ids.length === 0) return {};
+
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`);
+    if (!res.ok) throw new Error(`CoinGecko error: ${res.status}`);
+    const data = await res.json();
+    
+    const result: Record<string, number> = {};
+    for (const sym of symbols) {
+      const id = COINGECKO_MAP[sym.toUpperCase()];
+      if (id && data[id] && data[id].usd) {
+        result[sym.toUpperCase()] = data[id].usd;
+      }
+    }
+    return result;
+  } catch (err) {
+    console.error('Error fetching crypto:', err);
+    return {};
+  }
+}
+
+async function fetchStockPrices(symbols: string[]) {
+  const result: Record<string, number> = {};
+  for (const sym of symbols) {
+    try {
+      const quote = await yahooFinance.quote(sym.toUpperCase());
+      if (quote && (quote as any).regularMarketPrice) {
+        result[sym.toUpperCase()] = (quote as any).regularMarketPrice;
+      }
+    } catch (err) {
+      console.error(`Error fetching stock ${sym}:`, err);
+    }
+  }
+  return result;
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const symbolsParam = searchParams.get('symbols');
+  if (!symbolsParam) {
+    return NextResponse.json({ error: 'Missing symbols parameter' }, { status: 400 });
+  }
+
+  const symbols = symbolsParam.split(',').map((s) => s.trim().toUpperCase());
+  const now = Date.now();
+  const result: Record<string, number> = {};
+  const toFetchCrypto: string[] = [];
+  const toFetchStock: string[] = [];
+
+  for (const sym of symbols) {
+    if (cache[sym] && now - cache[sym].timestamp < CACHE_TTL_MS) {
+      result[sym] = cache[sym].price;
+    } else {
+      if (COINGECKO_MAP[sym]) {
+        toFetchCrypto.push(sym);
+      } else {
+        toFetchStock.push(sym);
+      }
+    }
+  }
+
+  if (toFetchCrypto.length > 0) {
+    const cryptoPrices = await fetchCryptoPrices(toFetchCrypto);
+    for (const [sym, price] of Object.entries(cryptoPrices)) {
+      result[sym] = price;
+      cache[sym] = { price, timestamp: now };
+    }
+  }
+
+  if (toFetchStock.length > 0) {
+    const stockPrices = await fetchStockPrices(toFetchStock);
+    for (const [sym, price] of Object.entries(stockPrices)) {
+      result[sym] = price;
+      cache[sym] = { price, timestamp: now };
+    }
+  }
+
+  // Fallback for failed fetches if they were previously cached
+  for (const sym of symbols) {
+    if (result[sym] === undefined && cache[sym]) {
+      result[sym] = cache[sym].price;
+    }
+  }
+
+  return NextResponse.json({ prices: result });
+}
