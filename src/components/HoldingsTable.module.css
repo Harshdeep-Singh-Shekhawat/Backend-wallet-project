@@ -1,6 +1,36 @@
 .container {
   width: 100%;
   overflow-x: auto;
+  padding: 24px;
+}
+
+.headerArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.tradeLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tradeLink:hover {
+  color: var(--color-text-primary);
 }
 
 .table {
@@ -10,13 +40,13 @@
 }
 
 .th {
-  padding: 16px 24px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 16px 0;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: var(--glass-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .thRight {
@@ -25,7 +55,7 @@
 
 .tr {
   transition: background-color 0.2s;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .tr:hover {
@@ -33,7 +63,7 @@
 }
 
 .td {
-  padding: 20px 24px;
+  padding: 24px 0;
 }
 
 .tdRight {
@@ -46,12 +76,16 @@
   gap: 16px;
 }
 
+.assetIconWrapper {
+  position: relative;
+}
+
 .assetIcon {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: var(--color-surface-hover);
-  border: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-text-secondary); /* Darker border in screenshot */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,54 +93,56 @@
   color: var(--color-text-primary);
 }
 
+/* Hardcode specific colors for known crypto assets to match screenshot dots */
+.assetDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+}
+
+.dotBTC { background-color: #f7931a; }
+.dotETH { background-color: #627eea; }
+.dotSOL { background-color: #14f195; }
+.dotDefault { background-color: var(--color-text-primary); }
+
+.borderBTC { border-color: rgba(247, 147, 26, 0.5); color: #f7931a; }
+.borderETH { border-color: rgba(98, 126, 234, 0.5); color: #627eea; }
+.borderSOL { border-color: rgba(20, 241, 149, 0.5); color: #14f195; }
+
 .assetSymbol {
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 800;
+  font-size: 15px;
   color: var(--color-text-primary);
 }
 
 .assetName {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .valuePrimary {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--color-text-primary);
-}
-
-.valueSecondary {
-  font-weight: 500;
+  font-weight: 800;
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 .pnlPositive {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 12px;
   color: var(--color-success);
+  margin-top: 4px;
 }
 
 .pnlNegative {
   font-weight: 700;
-  font-size: 15px;
-  color: var(--color-danger);
-}
-
-.pnlPercentPositive {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--color-success);
-  opacity: 0.8;
-}
-
-.pnlPercentNegative {
-  font-size: 12px;
-  font-weight: 600;
   color: var(--color-danger);
-  opacity: 0.8;
+  margin-top: 4px;
 }
 
 /* Empty State */
@@ -123,8 +159,8 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-color: var(--color-surface);
-  border: var(--glass-border);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,13 +169,13 @@
 }
 
 .emptyTitle {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   margin-bottom: 8px;
 }
 
 .emptyDesc {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-secondary);
   max-width: 320px;
   line-height: 1.5;

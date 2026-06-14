@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ArrowRightLeft, Wallet, Settings, LogOut, Bell } from 'lucide-react';
+import { LayoutDashboard, ArrowRightLeft, Wallet, Settings, Bell, Search, User } from 'lucide-react';
 import styles from './DashboardLayout.module.css';
 
 interface DashboardLayoutProps {
@@ -10,10 +10,10 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }: DashboardLayoutProps) {
   const menuItems = [
-    { id: 'Portfolio', icon: <LayoutDashboard size={20} />, label: 'Portfolio' },
-    { id: 'Trade', icon: <ArrowRightLeft size={20} />, label: 'Trade' },
-    { id: 'Wallets', icon: <Wallet size={20} />, label: 'Wallets' },
-    { id: 'Settings', icon: <Settings size={20} />, label: 'Settings' },
+    { id: 'Portfolio', icon: <LayoutDashboard size={18} />, label: 'Portfolio' },
+    { id: 'Trade', icon: <ArrowRightLeft size={18} />, label: 'Trade Markets' },
+    { id: 'Wallets', icon: <Wallet size={18} />, label: 'My Wallets' },
+    { id: 'Settings', icon: <Settings size={18} />, label: 'Preferences' },
   ];
 
   return (
@@ -38,11 +38,22 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
           ))}
         </nav>
         
-        <div className={styles.footer}>
-          <button className={styles.logoutBtn}>
-            <LogOut size={18} />
-            Sign out
-          </button>
+        <div className={styles.sidebarBottom}>
+          <div className={styles.helpCard}>
+            <div className={styles.helpLabel}>NEED HELP?</div>
+            <div className={styles.helpText}>Contact support 24/7</div>
+            <button className={styles.helpBtn}>Chat Now</button>
+          </div>
+
+          <div className={styles.userProfile}>
+            <div className={styles.userAvatar}>
+              <User size={20} color="#888" />
+            </div>
+            <div>
+              <div className={styles.userName}>Alex Doe</div>
+              <div className={styles.userStatus}>Verified Account</div>
+            </div>
+          </div>
         </div>
       </aside>
 
@@ -50,16 +61,20 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
       <main className={styles.main}>
         {/* Header */}
         <header className={styles.header}>
-          <h2 className={styles.headerTitle}>{activeTab}</h2>
-          <div className={styles.userMenu}>
+          <div className={styles.headerLeft}>
+            <h2 className={styles.headerTitle}>{activeTab} Overview</h2>
+            <div className={styles.headerSubtitle}>Track and manage your crypto assets.</div>
+          </div>
+          
+          <div className={styles.headerRight}>
+            <div className={styles.searchContainer}>
+              <Search size={16} className={styles.searchIcon} />
+              <input type="text" placeholder="Search assets..." className={styles.searchInput} />
+            </div>
             <button className={styles.notificationBtn}>
-              <Bell size={22} />
+              <Bell size={18} />
               <span className={styles.notificationBadge}></span>
             </button>
-            <div className={styles.userInfo}>
-              <div className={styles.userName}>Hi, Alex</div>
-              <div className={styles.userStatus}>VERIFIED ACCOUNT</div>
-            </div>
           </div>
         </header>
 
