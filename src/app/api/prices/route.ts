@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     try {
       const quotes = await yahooFinance.quote(querySymbols);
       // quote returns array if multiple, object if single
-      const quotesArray = Array.isArray(quotes) ? quotes : [quotes];
+      const quotesArray = (Array.isArray(quotes) ? quotes : [quotes]) as any[];
       
       for (const quote of quotesArray) {
         if (quote && quote.symbol && quote.regularMarketPrice) {
