@@ -27,14 +27,20 @@ export default function AssetChart({ data }: AssetChartProps) {
     );
   }
 
-  // Exact matching for specific assets to map to screenshot colors
+  // Colorful palette mapping
   const getColor = (name: string, index: number) => {
-    if (name === 'Available Cash' || name === 'CASH') return '#333333';
-    if (name === 'BTC') return '#ffffff';
-    if (name === 'ETH') return '#666666';
-    if (name === 'SOL') return '#999999';
-    // Fallbacks
-    const fallbacks = ['#ffffff', '#cccccc', '#999999', '#666666', '#333333'];
+    const nameUpper = name.toUpperCase();
+    if (nameUpper === 'AVAILABLE CASH' || nameUpper === 'CASH') return '#a855f7'; // vibrant purple
+    if (nameUpper === 'BTC') return '#f59e0b'; // amber/orange
+    if (nameUpper === 'ETH') return '#3b82f6'; // vibrant blue
+    if (nameUpper === 'SOL') return '#10b981'; // emerald green
+    if (nameUpper === 'AAPL') return '#ec4899'; // pink
+    if (nameUpper === 'TSLA') return '#ef4444'; // red
+    if (nameUpper === 'MSFT') return '#06b6d4'; // cyan
+    if (nameUpper === 'NVDA') return '#84cc16'; // lime
+    
+    // Fallback colorful palette
+    const fallbacks = ['#6366f1', '#f43f5e', '#14b8a6', '#f97316', '#d946ef'];
     return fallbacks[index % fallbacks.length];
   };
 

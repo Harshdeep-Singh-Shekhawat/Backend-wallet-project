@@ -12,9 +12,13 @@ import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
+const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('Portfolio');
-  const [tradeSymbol, setTradeSymbol] = useState('BTC');
+  const [tradeSymbolCrypto, setTradeSymbolCrypto] = useState('BTC');
+  const [tradeSymbolStock, setTradeSymbolStock] = useState('AAPL');
 
   // Wallet form state
   const [walletAction, setWalletAction] = useState<'deposit' | 'withdraw' | null>(null);
@@ -28,16 +32,22 @@ export default function App() {
 
   // Extract unique symbols from portfolio + default symbols for widget
   const holdings: any[] = portfolioData?.holdings || [];
-  const holdingSymbols = holdings.map((h) => h.symbol);
+  const holdingSymbols = holdings.map((h: any) => h.symbol);
   
-  // Track default symbols + current holdings + whatever is in the trade widget
-  const trackSymbols = Array.from(new Set([...holdingSymbols, 'BTC', 'ETH', 'SOL', tradeSymbol]));
+  // Track default symbols + current holdings + whatever is in the trade widgets
+  const trackSymbols = Array.from(new Set([
+    ...holdingSymbols, 
+    ...DEFAULT_CRYPTO, 
+    ...DEFAULT_STOCKS, 
+    tradeSymbolCrypto, 
+    tradeSymbolStock
+  ]));
   
-  // Fetch live prices every 30 seconds
+  // Fetch live prices every 15 seconds
   const { data: pricesData } = useSWR(
     trackSymbols.length > 0 ? `/api/prices?symbols=${trackSymbols.join(',')}` : null,
     fetcher,
-    { refreshInterval: 30000 }
+    { refreshInterval: 15000 }
   );
 
   const prices = pricesData?.prices || {};
@@ -48,7 +58,7 @@ export default function App() {
   let totalHoldingsValue = 0;
   let totalCost = 0;
 
-  const enrichedHoldings: Holding[] = holdings.map((h) => {
+  const enrichedHoldings: Holding[] = holdings.map((h: any) => {
     const currentPrice = prices[h.symbol] || h.averagePurchasePrice || 0;
     const value = h.quantity * currentPrice;
     const cost = h.quantity * h.averagePurchasePrice;
@@ -125,17 +135,10 @@ export default function App() {
             
             <div className={styles.grid}>
               <div className={styles.colSpan2}>
-                <div className={styles.sectionHeader}>
-                  <h3 className={styles.sectionTitle}>Your Assets</h3>
-                  <button onClick={() => setActiveTab('Trade')} className={styles.tradeBtn}>
-                    Trade Now
-                  </button>
-                </div>
-                <HoldingsTable holdings={enrichedHoldings} />
+                <HoldingsTable holdings={enrichedHoldings} onTradeClick={() => setActiveTab('Trade Crypto')} />
               </div>
               <div>
                 <div className={`glass-panel ${styles.card}`} style={{height: '100%'}}>
-                  <h3 className={styles.cardTitleBig} style={{fontSize: '18px'}}>Asset Allocation</h3>
                   <div style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                     <AssetChart data={chartData} />
                   </div>
@@ -145,23 +148,28 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'Trade' && (
+        {(activeTab === 'Trade Crypto' || activeTab === 'Trade Stocks') && (
           <div className={styles.grid}>
             <div className={styles.colSpan2}>
               <div className={`glass-panel ${styles.card}`}>
-                 <h3 className={styles.cardTitleBig}>Live Markets</h3>
-                 <p className={styles.cardDesc}>Real-time quotes. Click an asset to select it for trading.</p>
+                 <h3 className={styles.cardTitleBig}>Live Markets ({activeTab.split(' ')[1]})</h3>
+                 <p className={styles.cardDesc}>Real-time quotes powered by Yahoo Finance. Click an asset to select it for trading.</p>
                  
                  <div className={styles.marketList}>
-                    {Array.from(new Set(['BTC', 'ETH', 'SOL', tradeSymbol])).map((sym) => {
+                    {Array.from(new Set([
+                      ...(activeTab === 'Trade Crypto' ? DEFAULT_CRYPTO : DEFAULT_STOCKS),
+                      ...(activeTab === 'Trade Crypto' ? [tradeSymbolCrypto] : [tradeSymbolStock])
+                    ])).map((sym) => {
                       if (!sym) return null;
-                      const isUp = Math.random() > 0.5; // mocked direction
-                      const isSelected = sym === tradeSymbol;
+                      // Determine if price is up or down pseudo-randomly for visual demo 
+                      // (in a real app, we'd fetch previous close price to compare)
+                      const isUp = prices[sym] ? (prices[sym].toString().charCodeAt(0) % 2 === 0) : true;
+                      const isSelected = activeTab === 'Trade Crypto' ? sym === tradeSymbolCrypto : sym === tradeSymbolStock;
                       
                       return (
                       <div 
                         key={sym} 
-                        onClick={() => setTradeSymbol(sym)} 
+                        onClick={() => activeTab === 'Trade Crypto' ? setTradeSymbolCrypto(sym) : setTradeSymbolStock(sym)} 
                         className={`${styles.marketRow} ${isSelected ? styles.marketRowSelected : ''}`}
                       >
                         <div className={styles.marketIconArea}>
@@ -170,7 +178,7 @@ export default function App() {
                           </div>
                           <div>
                             <div className={styles.marketSymbol}>{sym}</div>
-                            <div className={styles.marketType}>Market</div>
+                            <div className={styles.marketType}>{activeTab === 'Trade Crypto' ? 'Crypto' : 'Stock'}</div>
                           </div>
                         </div>
                         <div className={styles.marketPriceArea}>
@@ -189,8 +197,8 @@ export default function App() {
                 <TradeWidget 
                   fiatBalance={fiatBalance}
                   prices={prices}
-                  symbol={tradeSymbol}
-                  setSymbol={setTradeSymbol}
+                  symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock}
+                  setSymbol={activeTab === 'Trade Crypto' ? setTradeSymbolCrypto : setTradeSymbolStock}
                   onTradeSuccess={() => { mutatePortfolio(); mutateTransactions(); }}
                 />
               </div>

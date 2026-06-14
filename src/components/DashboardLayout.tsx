@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ArrowRightLeft, Wallet, Settings, Bell, Search, User } from 'lucide-react';
+import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, Settings, Bell, Search, User } from 'lucide-react';
 import styles from './DashboardLayout.module.css';
 
 interface DashboardLayoutProps {
@@ -10,8 +10,9 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }: DashboardLayoutProps) {
   const menuItems = [
-    { id: 'Portfolio', icon: <LayoutDashboard size={18} />, label: 'Portfolio' },
-    { id: 'Trade', icon: <ArrowRightLeft size={18} />, label: 'Trade Markets' },
+    { id: 'Portfolio', icon: <LayoutDashboard size={18} />, label: 'Portfolio Overview' },
+    { id: 'Trade Crypto', icon: <ArrowRightLeft size={18} />, label: 'Trade Crypto' },
+    { id: 'Trade Stocks', icon: <TrendingUp size={18} />, label: 'Trade Stocks' },
     { id: 'Wallets', icon: <Wallet size={18} />, label: 'My Wallets' },
     { id: 'Settings', icon: <Settings size={18} />, label: 'Preferences' },
   ];
@@ -62,8 +63,8 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <h2 className={styles.headerTitle}>{activeTab} Overview</h2>
-            <div className={styles.headerSubtitle}>Track and manage your crypto assets.</div>
+            <h2 className={styles.headerTitle}>{activeTab}</h2>
+            <div className={styles.headerSubtitle}>Track and manage your assets.</div>
           </div>
           
           <div className={styles.headerRight}>
