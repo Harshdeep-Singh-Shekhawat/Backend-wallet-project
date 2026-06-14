@@ -329,46 +329,6 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'Settings' && (
-          <div className={styles.settingsGrid}>
-            <div className={styles.settingsSidebar}>
-              <div className={styles.settingsMenu}>
-                <button className={`${styles.settingsMenuBtn} ${styles.settingsMenuBtnActive}`}>Profile</button>
-                <button className={styles.settingsMenuBtn}>Security</button>
-                <button className={styles.settingsMenuBtn}>Linked Banks</button>
-              </div>
-            </div>
-            <div className={styles.settingsContent}>
-               <div className={`glass-panel ${styles.card}`}>
-                 <h3 className={styles.cardTitleBig} style={{fontSize: '18px', marginBottom: '24px'}}>Personal Information</h3>
-                 <div className={styles.settingsGroup}>
-                   <div className={styles.settingsItem}>
-                     <label className={styles.settingsLabel}>Email Address</label>
-                     <div className={styles.settingsValue}>alex@neotrade.app</div>
-                   </div>
-                   <div className={styles.settingsItem}>
-                     <label className={styles.settingsLabel}>Account Status</label>
-                     <div><span className={styles.badgeVerified}>Verified</span></div>
-                   </div>
-                 </div>
-               </div>
-               
-               <div className={`glass-panel ${styles.card} ${styles.securityBox}`}>
-                 <div className={styles.securityInfo}>
-                   <div className={styles.securityIcon}>
-                     <Shield size={24} />
-                   </div>
-                   <div>
-                     <h4 className={styles.securityTitle}>Two-Factor Authentication</h4>
-                     <p className={styles.securityDesc}>Protect your assets with an authenticator app.</p>
-                   </div>
-                 </div>
-                 <button className={styles.btnSecondary}>Enable 2FA</button>
-               </div>
-            </div>
-          </div>
-        )}
-
       </div>
     </DashboardLayout>
   );

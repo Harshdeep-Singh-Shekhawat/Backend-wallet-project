@@ -6,8 +6,40 @@ const yahooFinance = new (yahooFinancePkg as any)({ suppressNotices: ['yahooSurv
 const cache: Record<string, { price: number; timestamp: number }> = {};
 const CACHE_TTL_MS = 15 * 1000; // 15 seconds to keep it "live" but prevent spam
 
-// Identify known crypto symbols so we can append "-USD" for Yahoo Finance
-const CRYPTO_SYMBOLS = new Set(['BTC', 'ETH', 'SOL', 'DOGE', 'ADA', 'XRP', 'DOT', 'LTC', 'LINK']);
+const COINGECKO_MAP: Record<string, string> = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  SOL: 'solana',
+  DOGE: 'dogecoin',
+  ADA: 'cardano',
+  XRP: 'ripple',
+  DOT: 'polkadot',
+  LTC: 'litecoin',
+  LINK: 'chainlink'
+};
+
+async function fetchCryptoPrices(symbols: string[]) {
+  const ids = symbols.map((s) => COINGECKO_MAP[s.toUpperCase()]).filter(Boolean);
+  if (ids.length === 0) return {};
+
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`);
+    if (!res.ok) throw new Error(`CoinGecko error: ${res.status}`);
+    const data = await res.json();
+    
+    const result: Record<string, number> = {};
+    for (const sym of symbols) {
+      const id = COINGECKO_MAP[sym.toUpperCase()];
+      if (id && data[id] && data[id].usd) {
+        result[sym.toUpperCase()] = data[id].usd;
+      }
+    }
+    return result;
+  } catch (err) {
+    console.error('Error fetching crypto:', err);
+    return {};
+  }
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -20,37 +52,40 @@ export async function GET(request: Request) {
   const now = Date.now();
   const result: Record<string, number> = {};
   
-  const toFetch: { original: string; yahooSymbol: string }[] = [];
+  const toFetchCrypto: string[] = [];
+  const toFetchStock: string[] = [];
 
-  // Determine what needs fetching
   for (const sym of symbols) {
     if (cache[sym] && now - cache[sym].timestamp < CACHE_TTL_MS) {
       result[sym] = cache[sym].price;
     } else {
-      const isCrypto = CRYPTO_SYMBOLS.has(sym);
-      const yahooSymbol = isCrypto ? `${sym}-USD` : sym;
-      toFetch.push({ original: sym, yahooSymbol });
+      if (COINGECKO_MAP[sym]) {
+        toFetchCrypto.push(sym);
+      } else {
+        toFetchStock.push(sym);
+      }
     }
   }
 
-  // Fetch from Yahoo Finance
-  if (toFetch.length > 0) {
-    // Yahoo finance quote can take an array
-    const querySymbols = toFetch.map(item => item.yahooSymbol);
-    
+  // Fetch from CoinGecko for Crypto
+  if (toFetchCrypto.length > 0) {
+    const cryptoPrices = await fetchCryptoPrices(toFetchCrypto);
+    for (const [sym, price] of Object.entries(cryptoPrices)) {
+      result[sym] = price;
+      cache[sym] = { price, timestamp: now };
+    }
+  }
+
+  // Fetch from Yahoo Finance for Stocks
+  if (toFetchStock.length > 0) {
     try {
-      const quotes = await yahooFinance.quote(querySymbols);
-      // quote returns array if multiple, object if single
+      const quotes = await yahooFinance.quote(toFetchStock);
       const quotesArray = (Array.isArray(quotes) ? quotes : [quotes]) as any[];
       
       for (const quote of quotesArray) {
         if (quote && quote.symbol && quote.regularMarketPrice) {
-          // Find the original symbol mapping
-          const fetchItem = toFetch.find(item => item.yahooSymbol === quote.symbol);
-          if (fetchItem) {
-            result[fetchItem.original] = quote.regularMarketPrice;
-            cache[fetchItem.original] = { price: quote.regularMarketPrice, timestamp: now };
-          }
+          result[quote.symbol.toUpperCase()] = quote.regularMarketPrice;
+          cache[quote.symbol.toUpperCase()] = { price: quote.regularMarketPrice, timestamp: now };
         }
       }
     } catch (err) {

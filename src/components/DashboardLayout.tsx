@@ -14,7 +14,6 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
     { id: 'Trade Crypto', icon: <ArrowRightLeft size={18} />, label: 'Trade Crypto' },
     { id: 'Trade Stocks', icon: <TrendingUp size={18} />, label: 'Trade Stocks' },
     { id: 'Wallets', icon: <Wallet size={18} />, label: 'My Wallets' },
-    { id: 'Settings', icon: <Settings size={18} />, label: 'Preferences' },
   ];
 
   return (
@@ -62,10 +61,6 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
           </div>
           
           <div className={styles.headerRight}>
-            <button className={styles.notificationBtn}>
-              <Bell size={18} />
-              <span className={styles.notificationBadge}></span>
-            </button>
           </div>
         </header>
 
