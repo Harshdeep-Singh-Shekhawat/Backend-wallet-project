@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import yahooFinance from 'yahoo-finance2';
+import yahooFinancePkg from 'yahoo-finance2';
+const yahooFinance = new (yahooFinancePkg as any)({ suppressNotices: ['yahooSurvey'] });
 
 // Simple in-memory cache to prevent rate limits
 const cache: Record<string, { price: number; timestamp: number }> = {};

@@ -40,12 +40,6 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
         </nav>
         
         <div className={styles.sidebarBottom}>
-          <div className={styles.helpCard}>
-            <div className={styles.helpLabel}>NEED HELP?</div>
-            <div className={styles.helpText}>Contact support 24/7</div>
-            <button className={styles.helpBtn}>Chat Now</button>
-          </div>
-
           <div className={styles.userProfile}>
             <div className={styles.userAvatar}>
               <User size={20} color="#888" />
@@ -68,10 +62,6 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
           </div>
           
           <div className={styles.headerRight}>
-            <div className={styles.searchContainer}>
-              <Search size={16} className={styles.searchIcon} />
-              <input type="text" placeholder="Search assets..." className={styles.searchInput} />
-            </div>
             <button className={styles.notificationBtn}>
               <Bell size={18} />
               <span className={styles.notificationBadge}></span>
