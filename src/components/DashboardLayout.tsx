@@ -1,14 +1,16 @@
 import React from 'react';
-import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, Settings, Bell, Search, User } from 'lucide-react';
+import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, Settings, Bell, Search, User, LogOut } from 'lucide-react';
 import styles from './DashboardLayout.module.css';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  user?: { name: string; email: string };
+  onLogout?: () => void;
 }
 
-export default function DashboardLayout({ children, activeTab, setActiveTab }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, activeTab, setActiveTab, user, onLogout }: DashboardLayoutProps) {
   const menuItems = [
     { id: 'Portfolio', icon: <LayoutDashboard size={18} />, label: 'Portfolio Overview' },
     { id: 'Trade Crypto', icon: <ArrowRightLeft size={18} />, label: 'Trade Crypto' },
@@ -43,10 +45,15 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
             <div className={styles.userAvatar}>
               <User size={20} color="#888" />
             </div>
-            <div>
-              <div className={styles.userName}>Alex Doe</div>
-              <div className={styles.userStatus}>Verified Account</div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div className={styles.userName} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'User'}</div>
+              <div className={styles.userStatus} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email || 'user@example.com'}</div>
             </div>
+            {onLogout && (
+              <button onClick={onLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }} title="Log out">
+                <LogOut size={16} color="#888" />
+              </button>
+            )}
           </div>
         </div>
       </aside>

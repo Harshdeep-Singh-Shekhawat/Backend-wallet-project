@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET() {
   try {
-    const user = await prisma.user.findFirst();
+    const userId = await requireAuth();
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
 
     const transactions = await prisma.transaction.findMany({

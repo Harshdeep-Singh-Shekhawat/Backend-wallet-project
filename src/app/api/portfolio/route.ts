@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET() {
   try {
-    // For prototype, grab the first user
-    const user = await prisma.user.findFirst({
+    const userId = await requireAuth();
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
       include: {
         portfolios: {
           include: {

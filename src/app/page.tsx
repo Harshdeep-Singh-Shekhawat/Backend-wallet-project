@@ -7,6 +7,7 @@ import PortfolioOverview from '@/components/PortfolioOverview';
 import HoldingsTable, { Holding } from '@/components/HoldingsTable';
 import TradeWidget from '@/components/TradeWidget';
 import AssetChart from '@/components/AssetChart';
+import AuthScreen from '@/components/AuthScreen';
 import { Loader2, ArrowUpRight, ArrowDownRight, Wallet as WalletIcon, Clock, Shield, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -26,9 +27,13 @@ export default function App() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletError, setWalletError] = useState('');
 
-  // Fetch user portfolio & transactions
-  const { data: portfolioData, mutate: mutatePortfolio } = useSWR('/api/portfolio', fetcher);
-  const { data: transactionsData, mutate: mutateTransactions } = useSWR('/api/transactions', fetcher);
+  // Auth state
+  const { data: authData, mutate: mutateAuth, isLoading: authLoading } = useSWR('/api/auth/me', fetcher);
+  const isAuthenticated = authData?.authenticated;
+
+  // Fetch user portfolio & transactions only if authenticated
+  const { data: portfolioData, mutate: mutatePortfolio } = useSWR(isAuthenticated ? '/api/portfolio' : null, fetcher);
+  const { data: transactionsData, mutate: mutateTransactions } = useSWR(isAuthenticated ? '/api/transactions' : null, fetcher);
 
   // Extract unique symbols from portfolio + default symbols for widget
   const holdings: any[] = portfolioData?.holdings || [];
@@ -112,7 +117,7 @@ export default function App() {
     }
   };
 
-  if (!portfolioData) {
+  if (authLoading || (isAuthenticated && !portfolioData)) {
     return (
       <div className={styles.loading}>
         <Loader2 className={styles.loader} />
@@ -120,8 +125,22 @@ export default function App() {
     );
   }
 
+  if (!isAuthenticated) {
+    return <AuthScreen onSuccess={() => mutateAuth()} />;
+  }
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    mutateAuth();
+  };
+
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+    <DashboardLayout 
+      activeTab={activeTab} 
+      setActiveTab={setActiveTab} 
+      user={authData?.user} 
+      onLogout={handleLogout}
+    >
       <div className={styles.container}>
         
         {activeTab === 'Portfolio' && (

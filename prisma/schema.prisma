@@ -12,6 +12,9 @@ datasource db {
 
 model User {
   id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  name        String
   fiatBalance Float    @default(10000.0)
   createdAt   DateTime @default(now())
 

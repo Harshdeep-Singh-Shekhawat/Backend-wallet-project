@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 import Decimal from 'decimal.js';
 
 export async function POST(request: Request) {
@@ -16,8 +17,9 @@ export async function POST(request: Request) {
 
     // Using transaction for atomicity
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Get User
-      const user = await tx.user.findFirst();
+      // 2. Get User
+      const userId = await requireAuth();
+      const user = await tx.user.findUnique({ where: { id: userId } });
       if (!user) throw new Error('User not found');
 
       const userBalance = new Decimal(user.fiatBalance);
