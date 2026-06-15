@@ -19,7 +19,7 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalPnL, p
         <div className={styles.iconWrapper}>
           <Wallet size={18} strokeWidth={2.5} />
         </div>
-        <div className={styles.cardTitle}>Total Balance</div>
+        <div className={styles.cardTitle}>Portfolio Value</div>
         <div className={styles.cardValue}>
           ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
@@ -30,7 +30,7 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalPnL, p
         <div className={styles.iconWrapper}>
           <CreditCard size={18} strokeWidth={2.5} />
         </div>
-        <div className={styles.cardTitle}>Buying Power</div>
+        <div className={styles.cardTitle}>Available Cash</div>
         <div className={styles.cardValue}>
           ${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>

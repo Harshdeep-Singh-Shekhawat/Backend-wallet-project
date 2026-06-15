@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/google/callback`;
+  const url = new URL(request.url);
+  const redirectUri = `${url.origin}/api/auth/google/callback`;
   
   if (!clientId || !redirectUri) {
     return NextResponse.json({ error: 'OAuth configuration missing' }, { status: 500 });

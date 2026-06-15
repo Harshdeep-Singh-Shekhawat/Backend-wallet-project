@@ -15,7 +15,7 @@ model User {
   email       String   @unique
   password    String?
   name        String
-  fiatBalance Float    @default(10000.0)
+  fiatBalance Float    @default(0.0)
   createdAt   DateTime @default(now())
 
   portfolios   Portfolio[]
