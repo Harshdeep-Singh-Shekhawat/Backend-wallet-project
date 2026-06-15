@@ -82,7 +82,6 @@ export default function App() {
 
   // Prepare data for the pie chart
   const chartData = [
-    { name: 'Available Cash', value: fiatBalance },
     ...enrichedHoldings.map((h) => ({ name: h.symbol, value: h.quantity * h.currentPrice }))
   ];
 
@@ -148,6 +147,7 @@ export default function App() {
             <PortfolioOverview
               totalValue={totalHoldingsValue}
               fiatBalance={fiatBalance}
+              totalCost={totalCost}
               totalPnL={totalPnL}
               pnlPercentage={pnlPercentage}
             />
