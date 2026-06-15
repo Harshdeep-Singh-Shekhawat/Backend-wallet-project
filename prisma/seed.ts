@@ -5,10 +5,12 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Seeding database...')
 
-  // Create a default user with $10,000 balance
+  // Create a default user
   const user = await prisma.user.create({
     data: {
-      fiatBalance: 10000.0,
+      email: 'demo@example.com',
+      name: 'Demo User',
+      fiatBalance: 0.0,
     },
   })
   
