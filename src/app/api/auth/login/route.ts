@@ -20,6 +20,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    if (!user.password) {
+      return NextResponse.json({ error: 'Please sign in with Google' }, { status: 401 });
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
