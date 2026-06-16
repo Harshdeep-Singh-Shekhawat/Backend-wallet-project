@@ -14,19 +14,28 @@ interface TradeWidgetProps {
 
 export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, onTradeSuccess }: TradeWidgetProps) {
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL'>('BUY');
-  const [amount, setAmount] = useState('');
+  const [tradeMode, setTradeMode] = useState<'QUANTITY' | 'AMOUNT'>('QUANTITY');
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   const currentPrice = prices[symbol] || 0;
-  const numAmount = parseFloat(amount) || 0;
-  const estimatedValue = numAmount * currentPrice;
-  const balanceAfterTrade = activeTab === 'BUY' ? fiatBalance - estimatedValue : fiatBalance + estimatedValue;
+  const numInput = parseFloat(inputValue) || 0;
+  
+  const calculatedQuantity = tradeMode === 'QUANTITY' 
+    ? numInput 
+    : (currentPrice > 0 ? numInput / currentPrice : 0);
+
+  const calculatedAmount = tradeMode === 'QUANTITY'
+    ? numInput * currentPrice
+    : numInput;
+
+  const balanceAfterTrade = activeTab === 'BUY' ? fiatBalance - calculatedAmount : fiatBalance + calculatedAmount;
 
   const handleTrade = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!symbol || !amount || numAmount <= 0) return;
+    if (!symbol || !inputValue || numInput <= 0) return;
     if (currentPrice <= 0) {
       setError('Price data unavailable');
       return;
@@ -42,7 +51,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           symbol,
-          quantity: numAmount,
+          quantity: calculatedQuantity,
           currentPrice,
         }),
       });
@@ -52,8 +61,8 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
         throw new Error(data.error || 'Trade failed');
       }
 
-      setAmount('');
-      setSuccessMsg(`Successfully ${activeTab === 'BUY' ? 'bought' : 'sold'} ${numAmount} ${symbol}`);
+      setInputValue('');
+      setSuccessMsg(`Successfully ${activeTab === 'BUY' ? 'bought' : 'sold'} ${calculatedQuantity.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${symbol}`);
       onTradeSuccess();
       
       setTimeout(() => setSuccessMsg(''), 3000);
@@ -105,16 +114,30 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
 
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
-            <label className={styles.label}>Quantity</label>
-            <span className={styles.priceBadge}>
-              {currentPrice ? `@ $${currentPrice.toLocaleString()}` : 'Loading...'}
-            </span>
+            <label className={styles.label}>
+              {tradeMode === 'QUANTITY' ? 'Quantity' : 'Amount ($)'}
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className={styles.priceBadge}>
+                {currentPrice ? `@ $${currentPrice.toLocaleString()}` : 'Loading...'}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setTradeMode(tradeMode === 'QUANTITY' ? 'AMOUNT' : 'QUANTITY');
+                  setInputValue('');
+                }}
+                className={styles.modeToggleBtn}
+              >
+                Switch to {tradeMode === 'QUANTITY' ? 'Amount' : 'Quantity'}
+              </button>
+            </div>
           </div>
           <input
             type="number"
             step="any"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder="0.00"
             className={styles.input}
             required
@@ -123,9 +146,13 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
 
         <div className={styles.summaryBox}>
           <div className={styles.summaryRow}>
-            <span className={styles.summaryLabel}>Estimated Cost</span>
+            <span className={styles.summaryLabel}>
+              {tradeMode === 'QUANTITY' ? (activeTab === 'BUY' ? 'Estimated Cost' : 'Estimated Return') : 'Estimated Quantity'}
+            </span>
             <span className={styles.summaryValueBig}>
-              ${estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {tradeMode === 'QUANTITY' 
+                ? `$${calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : `${calculatedQuantity.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${symbol}`}
             </span>
           </div>
           <div className={styles.summaryRowDivider}>
@@ -150,7 +177,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
 
         <button
           type="submit"
-          disabled={isLoading || currentPrice <= 0 || numAmount <= 0}
+          disabled={isLoading || currentPrice <= 0 || numInput <= 0}
           className={`${styles.submitBtn} ${activeTab === 'BUY' ? styles.submitBtnBuy : styles.submitBtnSell}`}
         >
           {isLoading && <Loader2 className={styles.loader} size={20} />}
