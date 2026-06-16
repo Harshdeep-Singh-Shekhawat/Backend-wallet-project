@@ -19,7 +19,8 @@ export async function GET(request: Request) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = `${url.origin}/api/auth/google/callback`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('x-forwarded-proto') === 'https' ? `https://${request.headers.get('host')}` : url.origin);
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   if (!clientId || !clientSecret || !redirectUri) {
     return NextResponse.json({ error: 'Missing OAuth configuration' }, { status: 500 });
