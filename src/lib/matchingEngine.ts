@@ -17,7 +17,7 @@ export async function processOrder(orderId: string) {
     if (remainingQuantity <= 0) return;
 
     // 2. Find matching orders
-    let matchingOrders = [];
+    let matchingOrders: any[] = [];
     
     if (order.type === 'BUY') {
       matchingOrders = await tx.order.findMany({
