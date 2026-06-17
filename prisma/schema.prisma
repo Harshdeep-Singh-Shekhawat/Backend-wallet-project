@@ -14,14 +14,16 @@ model User {
   id          String   @id @default(uuid())
   email       String   @unique
   password    String?
-  name        String
-  fiatBalance Float    @default(0.0)
-  createdAt   DateTime @default(now())
+  name              String
+  fiatBalance       Float    @default(0.0)
+  lockedFiatBalance Float    @default(0.0)
+  createdAt         DateTime @default(now())
 
   portfolios   Portfolio[]
   transactions Transaction[]
   watchlists   Watchlist[]
   alerts       Alert[]
+  orders       Order[]
 }
 
 model Asset {
@@ -33,6 +35,7 @@ model Asset {
 
   portfolios   Portfolio[]
   transactions Transaction[]
+  orders       Order[]
 }
 
 model Portfolio {
@@ -40,6 +43,7 @@ model Portfolio {
   userId               String
   assetId              String
   quantity             Float
+  lockedQuantity       Float    @default(0.0)
   averagePurchasePrice Float
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -86,4 +90,21 @@ model Alert {
   triggeredAt DateTime?
 
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id             String   @id @default(uuid())
+  userId         String
+  assetId        String
+  type           String   // "BUY" or "SELL"
+  orderType      String   // "LIMIT" or "MARKET"
+  price          Float?   // Only for LIMIT
+  quantity       Float
+  filledQuantity Float    @default(0.0)
+  status         String   @default("PENDING") // "PENDING", "PARTIAL", "FILLED", "CANCELLED"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
 }

@@ -4,12 +4,13 @@ import styles from './PortfolioOverview.module.css';
 interface PortfolioOverviewProps {
   totalValue: number;
   fiatBalance: number;
+  lockedFiatBalance?: number;
   totalCost: number;
   totalPnL: number;
   pnlPercentage: number;
 }
 
-export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, totalPnL, pnlPercentage }: PortfolioOverviewProps) {
+export default function PortfolioOverview({ totalValue, fiatBalance, lockedFiatBalance = 0, totalCost, totalPnL, pnlPercentage }: PortfolioOverviewProps) {
   const isProfit = totalPnL >= 0;
   const totalBalance = totalValue;
 
@@ -66,6 +67,11 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, 
         <div className={styles.cardValue}>
           ${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
+        {lockedFiatBalance > 0 && (
+          <div style={{ color: '#888', fontSize: '12px', marginTop: '4px' }}>
+            + ${lockedFiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} locked in orders
+          </div>
+        )}
       </div>
     </div>
   );
