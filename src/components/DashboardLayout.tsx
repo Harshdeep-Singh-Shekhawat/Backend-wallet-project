@@ -1,5 +1,6 @@
 import React from 'react';
-import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, Settings, Bell, Search, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, User, LogOut, Eye, BellRing } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 import styles from './DashboardLayout.module.css';
 
 interface DashboardLayoutProps {
@@ -13,13 +14,16 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, activeTab, setActiveTab, user, onLogout }: DashboardLayoutProps) {
   const menuItems = [
     { id: 'Portfolio', icon: <LayoutDashboard size={18} />, label: 'Portfolio Overview' },
+    { id: 'Watchlist', icon: <Eye size={18} />, label: 'Watchlist' },
     { id: 'Trade Crypto', icon: <ArrowRightLeft size={18} />, label: 'Trade Crypto' },
     { id: 'Trade Stocks', icon: <TrendingUp size={18} />, label: 'Trade Stocks' },
     { id: 'Wallets', icon: <Wallet size={18} />, label: 'My Wallets' },
+    { id: 'Alerts', icon: <BellRing size={18} />, label: 'Price Alerts' },
   ];
 
   return (
     <div className={styles.layout}>
+      <Toaster position="top-right" toastOptions={{ style: { background: '#333', color: '#fff', border: '1px solid #444' } }} />
       {/* Sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.logoArea}>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useSWR from 'swr';
+import toast from 'react-hot-toast';
 import { useWebSocketPrices } from '@/hooks/useWebSocketPrices';
 import DashboardLayout from '@/components/DashboardLayout';
 import PortfolioOverview from '@/components/PortfolioOverview';
@@ -9,6 +10,8 @@ import HoldingsTable, { Holding } from '@/components/HoldingsTable';
 import TradeWidget from '@/components/TradeWidget';
 import AssetChart from '@/components/AssetChart';
 import AuthScreen from '@/components/AuthScreen';
+import WatchlistTab from '@/components/WatchlistTab';
+import AlertsTab from '@/components/AlertsTab';
 import { Loader2, ArrowUpRight, ArrowDownRight, Wallet as WalletIcon, Clock, Shield, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -36,15 +39,23 @@ export default function App() {
   const { data: portfolioData, mutate: mutatePortfolio } = useSWR(isAuthenticated ? '/api/portfolio' : null, fetcher);
   const { data: transactionsData, mutate: mutateTransactions } = useSWR(isAuthenticated ? '/api/transactions' : null, fetcher);
 
+  // Fetch watchlists & alerts
+  const { data: watchlistData } = useSWR(isAuthenticated ? '/api/watchlist' : null, fetcher);
+  const { data: alertsData, mutate: mutateAlerts } = useSWR(isAuthenticated ? '/api/alerts' : null, fetcher);
+
   // Extract unique symbols from portfolio + default symbols for widget
   const holdings: any[] = portfolioData?.holdings || [];
   const holdingSymbols = holdings.map((h: any) => h.symbol);
+  const watchlistSymbols = watchlistData?.watchlists?.map((w: any) => w.symbol) || [];
+  const alertSymbols = alertsData?.alerts?.map((a: any) => a.symbol) || [];
   
   // Track default symbols + current holdings + whatever is in the trade widgets
   const trackSymbols = Array.from(new Set([
     ...holdingSymbols, 
     ...DEFAULT_CRYPTO, 
     ...DEFAULT_STOCKS, 
+    ...watchlistSymbols,
+    ...alertSymbols,
     tradeSymbolCrypto, 
     tradeSymbolStock
   ]));
@@ -63,6 +74,31 @@ export default function App() {
   const prices = { ...(pricesData?.prices || {}), ...wsPrices };
   const fiatBalance = portfolioData?.fiatBalance || 0;
   const transactions = transactionsData?.transactions || [];
+
+  // Alert Engine (Client-Side)
+  useEffect(() => {
+    const activeAlerts = alertsData?.alerts?.filter((a: any) => a.status === 'ACTIVE') || [];
+    
+    activeAlerts.forEach((alert: any) => {
+      const currentPrice = prices[alert.symbol];
+      if (!currentPrice) return;
+
+      let triggered = false;
+      if (alert.direction === 'ABOVE' && currentPrice >= alert.targetPrice) triggered = true;
+      if (alert.direction === 'BELOW' && currentPrice <= alert.targetPrice) triggered = true;
+
+      if (triggered) {
+        toast.success(`🎯 ${alert.symbol} just crossed $${alert.targetPrice.toLocaleString()}!`, { duration: 6000 });
+        
+        // Mark as triggered in DB to prevent infinite firing
+        fetch('/api/alerts', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ alertId: alert.id, status: 'TRIGGERED' }),
+        }).then(() => mutateAlerts());
+      }
+    });
+  }, [prices, alertsData, mutateAlerts]);
 
   // Calculate totals
   let totalHoldingsValue = 0;
@@ -170,6 +206,14 @@ export default function App() {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'Watchlist' && (
+          <WatchlistTab prices={prices} onAddSymbol={() => {}} />
+        )}
+
+        {activeTab === 'Alerts' && (
+          <AlertsTab prices={prices} onAddSymbol={() => {}} />
         )}
 
         {(activeTab === 'Trade Crypto' || activeTab === 'Trade Stocks') && (

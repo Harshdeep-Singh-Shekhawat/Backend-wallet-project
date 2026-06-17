@@ -20,6 +20,8 @@ model User {
 
   portfolios   Portfolio[]
   transactions Transaction[]
+  watchlists   Watchlist[]
+  alerts       Alert[]
 }
 
 model Asset {
@@ -60,4 +62,28 @@ model Transaction {
 
   user  User  @relation(fields: [userId], references: [id])
   asset Asset? @relation(fields: [assetId], references: [id])
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  symbol    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, symbol])
+}
+
+model Alert {
+  id          String   @id @default(uuid())
+  userId      String
+  symbol      String
+  targetPrice Float
+  direction   String   // "ABOVE" or "BELOW"
+  status      String   @default("ACTIVE") // "ACTIVE" or "TRIGGERED"
+  createdAt   DateTime @default(now())
+  triggeredAt DateTime?
+
+  user        User     @relation(fields: [userId], references: [id])
 }
