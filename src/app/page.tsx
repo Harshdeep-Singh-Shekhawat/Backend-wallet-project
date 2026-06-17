@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { useWebSocketPrices } from '@/hooks/useWebSocketPrices';
 import DashboardLayout from '@/components/DashboardLayout';
 import PortfolioOverview from '@/components/PortfolioOverview';
 import HoldingsTable, { Holding } from '@/components/HoldingsTable';
@@ -48,14 +49,18 @@ export default function App() {
     tradeSymbolStock
   ]));
   
-  // Fetch live prices every 15 seconds
+  // Connect to Binance WebSocket for ultra-fast crypto prices
+  const wsPrices = useWebSocketPrices(trackSymbols);
+
+  // Fetch live prices every 15 seconds (primarily for stocks now, and as a fallback)
   const { data: pricesData } = useSWR(
     trackSymbols.length > 0 ? `/api/prices?symbols=${trackSymbols.join(',')}` : null,
     fetcher,
     { refreshInterval: 15000 }
   );
 
-  const prices = pricesData?.prices || {};
+  // Merge fast WS prices over HTTP polled prices
+  const prices = { ...(pricesData?.prices || {}), ...wsPrices };
   const fiatBalance = portfolioData?.fiatBalance || 0;
   const transactions = transactionsData?.transactions || [];
 
