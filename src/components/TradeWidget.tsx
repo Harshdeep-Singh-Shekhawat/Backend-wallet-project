@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import useSWR from 'swr';
 import { Loader2, Trash2 } from 'lucide-react';
 import styles from './TradeWidget.module.css';
