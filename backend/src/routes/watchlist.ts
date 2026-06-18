@@ -11,9 +11,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        watchlist: {
-          include: { asset: true }
-        }
+        watchlists: true
       }
     });
 
@@ -21,7 +19,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    return res.json({ watchlist: user.watchlist });
+    return res.json({ watchlists: user.watchlists });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -36,22 +34,14 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Symbol is required' });
     }
 
-    let asset = await prisma.asset.findUnique({ where: { symbol } });
-    if (!asset) {
-      asset = await prisma.asset.create({
-        data: { symbol, name: symbol, type: 'CRYPTO' },
-      });
-    }
-
-    const watchlistItem = await prisma.watchlistItem.create({
+    const watchlist = await prisma.watchlist.create({
       data: {
         userId,
-        assetId: asset.id,
+        symbol,
       },
-      include: { asset: true },
     });
 
-    return res.json({ watchlistItem });
+    return res.json({ watchlist });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -66,15 +56,10 @@ router.delete('/', requireAuth, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Symbol is required' });
     }
 
-    const asset = await prisma.asset.findUnique({ where: { symbol } });
-    if (!asset) {
-      return res.status(404).json({ error: 'Asset not found' });
-    }
-
-    await prisma.watchlistItem.deleteMany({
+    await prisma.watchlist.deleteMany({
       where: {
         userId,
-        assetId: asset.id,
+        symbol,
       },
     });
 
