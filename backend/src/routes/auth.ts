@@ -1,11 +1,23 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../lib/auth';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-development-only';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+const isProduction = () => process.env.NODE_ENV === 'production';
+
+const authCookieOptions = () => ({
+  httpOnly: true,
+  secure: isProduction(),
+  sameSite: isProduction() ? 'none' as const : 'lax' as const,
+  path: '/',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
 router.post('/signup', async (req, res) => {
   try {
@@ -24,19 +36,9 @@ router.post('/signup', async (req, res) => {
       data: { name, email, password: hashedPassword, fiatBalance: 0.0 },
     });
 
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const token = await new SignJWT({ userId: user.id })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(secret);
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('token', token, authCookieOptions());
 
     return res.json({ user: { id: user.id, name: user.name, email: user.email } });
   } catch (error: any) {
@@ -61,19 +63,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const token = await new SignJWT({ userId: user.id })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(secret);
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('token', token, authCookieOptions());
 
     return res.json({ user: { id: user.id, name: user.name, email: user.email } });
   } catch (error: any) {
@@ -82,13 +74,18 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.cookie('token', '', { maxAge: -1, path: '/' });
+  res.cookie('token', '', { ...authCookieOptions(), maxAge: -1 });
   return res.json({ success: true });
 });
 
 router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ authenticated: false });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return res.status(404).json({ error: 'User not found', authenticated: false });
     }
@@ -101,24 +98,21 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
 // Google OAuth implementation
 router.get('/google', (req, res) => {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/api/auth/google/callback`; // We'll handle callback in backend but let's map it correctly
+  const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
 
-  // Actually, the Google console might still have the old redirect URI (http://localhost:3000/api/auth/google/callback).
-  // So we should mount a proxy route in frontend or just update the redirect URI.
-  // We will assume the redirect URI is http://localhost:5000/api/auth/google/callback.
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent('http://localhost:5000/api/auth/google/callback')}&response_type=code&scope=email%20profile`;
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile`;
   res.redirect(authUrl);
 });
 
 router.get('/google/callback', async (req, res) => {
   const code = req.query.code as string;
   if (!code) {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?error=NoCode`);
+    return res.redirect(`${FRONTEND_URL}?error=NoCode`);
   }
 
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = 'http://localhost:5000/api/auth/google/callback';
+  const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
 
   try {
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -153,24 +147,14 @@ router.get('/google/callback', async (req, res) => {
       });
     }
 
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const token = await new SignJWT({ userId: user.id })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(secret);
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie('token', token, authCookieOptions());
 
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+    return res.redirect(FRONTEND_URL);
   } catch (error) {
     console.error('Google Auth Error:', error);
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?error=GoogleAuthFailed`);
+    return res.redirect(`${FRONTEND_URL}?error=GoogleAuthFailed`);
   }
 });
 

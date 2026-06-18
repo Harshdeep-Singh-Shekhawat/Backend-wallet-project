@@ -6,8 +6,10 @@ const router = Router();
 
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
+    const userId = req.userId!;
+
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where: { id: userId },
       include: {
         portfolios: {
           include: {

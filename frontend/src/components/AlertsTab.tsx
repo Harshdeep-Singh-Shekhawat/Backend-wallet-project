@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { Loader2, Trash2, Plus, Bell } from 'lucide-react';
+import { Loader2, Trash2, Plus, BellRing, CheckCircle2 } from 'lucide-react';
 import { apiFetch, apiFetcher } from '@/lib/api';
 import styles from '../app/page.module.css';
 
