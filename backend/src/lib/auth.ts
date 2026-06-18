@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { jwtVerify } from 'jose';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-development-only';
 
@@ -15,8 +15,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
   }
 
   try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload & { userId?: string };
     
     if (!payload.userId) {
       throw new Error('Invalid token payload');

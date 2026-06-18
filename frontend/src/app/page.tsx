@@ -9,6 +9,7 @@ import PortfolioOverview from '@/components/PortfolioOverview';
 import HoldingsTable, { Holding } from '@/components/HoldingsTable';
 import TradeWidget from '@/components/TradeWidget';
 import AssetChart from '@/components/AssetChart';
+import TrendChart from '@/components/TrendChart';
 import AuthScreen from '@/components/AuthScreen';
 import WatchlistTab from '@/components/WatchlistTab';
 import AlertsTab from '@/components/AlertsTab';
@@ -259,6 +260,9 @@ export default function App() {
                       </div>
                     )})}
                  </div>
+              </div>
+              <div className={`glass-panel ${styles.card}`} style={{ marginTop: '24px' }}>
+                <TrendChart symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock} />
               </div>
             </div>
             <div>
