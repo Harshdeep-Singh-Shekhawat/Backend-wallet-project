@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import toast from 'react-hot-toast';
 import { useWebSocketPrices } from '@/hooks/useWebSocketPrices';
@@ -77,6 +77,8 @@ export default function App() {
   const transactions = transactionsData?.transactions || [];
 
   // Alert Engine (Client-Side)
+  const firedAlerts = useRef(new Set<string>());
+
   useEffect(() => {
     const activeAlerts = alertsData?.alerts?.filter((a: any) => a.status === 'ACTIVE') || [];
     
@@ -88,7 +90,8 @@ export default function App() {
       if (alert.direction === 'ABOVE' && currentPrice >= alert.targetPrice) triggered = true;
       if (alert.direction === 'BELOW' && currentPrice <= alert.targetPrice) triggered = true;
 
-      if (triggered) {
+      if (triggered && !firedAlerts.current.has(alert.id)) {
+        firedAlerts.current.add(alert.id);
         toast.success(`🎯 ${alert.symbol} just crossed $${alert.targetPrice.toLocaleString()}!`, { duration: 6000 });
         
         if (alert.autoTradeType && alert.autoTradeQuantity) {

@@ -48,21 +48,28 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
 router.patch('/', requireAuth, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    const { alertId, status } = req.body;
+    const { alertId, status, targetPrice, condition, autoTradeType, autoTradeQuantity } = req.body;
 
-    if (!alertId || !status) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!alertId) {
+      return res.status(400).json({ error: 'Missing alertId' });
     }
+
+    const updateData: any = {};
+    if (status) {
+      updateData.status = status;
+      if (status === 'TRIGGERED') updateData.triggeredAt = new Date();
+    }
+    if (targetPrice) updateData.targetPrice = targetPrice;
+    if (condition) updateData.direction = condition;
+    if (autoTradeType !== undefined) updateData.autoTradeType = autoTradeType === 'NONE' ? null : autoTradeType;
+    if (autoTradeQuantity !== undefined) updateData.autoTradeQuantity = autoTradeQuantity ? parseFloat(autoTradeQuantity) : null;
 
     const alert = await prisma.alert.updateMany({
       where: {
         id: alertId,
         userId,
       },
-      data: {
-        status,
-        triggeredAt: status === 'TRIGGERED' ? new Date() : null,
-      },
+      data: updateData,
     });
 
     return res.json({ success: true, alert });

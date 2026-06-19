@@ -17,6 +17,12 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
   const [tradeAction, setTradeAction] = useState('NONE');
   const [tradeQuantity, setTradeQuantity] = useState('');
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTargetPrice, setEditTargetPrice] = useState('');
+  const [editTradeAction, setEditTradeAction] = useState('NONE');
+  const [editTradeQuantity, setEditTradeQuantity] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+
   const { data, mutate, isLoading } = useSWR('/api/alerts', apiFetcher);
   const alerts = data?.alerts || [];
 
@@ -78,6 +84,39 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleEditSave = async (alertId: string) => {
+    setSavingId(alertId);
+    try {
+      const payload: any = {
+        alertId,
+        targetPrice: parseFloat(editTargetPrice),
+        autoTradeType: editTradeAction,
+        autoTradeQuantity: editTradeAction !== 'NONE' && editTradeQuantity ? parseFloat(editTradeQuantity) : null,
+      };
+
+      const res = await apiFetch('/api/alerts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setEditingId(null);
+        mutate();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const startEdit = (a: any) => {
+    setEditingId(a.id);
+    setEditTargetPrice(a.targetPrice.toString());
+    setEditTradeAction(a.autoTradeType || 'NONE');
+    setEditTradeQuantity(a.autoTradeQuantity ? a.autoTradeQuantity.toString() : '');
   };
 
   if (isLoading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 className="spin" /></div>;
@@ -142,6 +181,49 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
               const price = prices[sym];
               const isTriggered = a.status === 'TRIGGERED';
 
+              if (editingId === a.id) {
+                return (
+                  <div key={a.id} className={styles.marketRow} style={{ padding: '16px', flexDirection: 'column', gap: '10px', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
+                      <div style={{ padding: '10px', color: 'white', fontWeight: 'bold' }}>{sym}</div>
+                      <input
+                        type="number"
+                        step="any"
+                        placeholder="Target Price USD"
+                        value={editTargetPrice}
+                        onChange={(e) => setEditTargetPrice(e.target.value)}
+                        style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'rgba(255,255,255,0.05)', color: 'white', flex: 1, minWidth: '100px' }}
+                      />
+                      <select
+                        value={editTradeAction}
+                        onChange={(e) => setEditTradeAction(e.target.value)}
+                        style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'rgba(255,255,255,0.05)', color: 'white', flex: 1, minWidth: '120px' }}
+                      >
+                        <option value="NONE" style={{ color: 'black' }}>Notify Only</option>
+                        <option value="BUY" style={{ color: 'black' }}>Auto-Buy</option>
+                        <option value="SELL" style={{ color: 'black' }}>Auto-Sell</option>
+                      </select>
+                      {editTradeAction !== 'NONE' && (
+                        <input
+                          type="number"
+                          step="any"
+                          placeholder="Quantity"
+                          value={editTradeQuantity}
+                          onChange={(e) => setEditTradeQuantity(e.target.value)}
+                          style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'rgba(255,255,255,0.05)', color: 'white', flex: 1, minWidth: '100px' }}
+                        />
+                      )}
+                      <button onClick={() => handleEditSave(a.id)} disabled={savingId === a.id} style={{ padding: '10px 15px', borderRadius: '8px', background: '#22c55e', color: 'white', border: 'none', cursor: 'pointer' }}>
+                        {savingId === a.id ? 'Saving...' : 'Save'}
+                      </button>
+                      <button onClick={() => setEditingId(null)} style={{ padding: '10px 15px', borderRadius: '8px', background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div key={a.id} className={styles.marketRow} style={{ padding: '16px', opacity: isTriggered ? 0.6 : 1 }}>
                   <div className={styles.marketIconArea}>
@@ -160,7 +242,7 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
                       </div>
                     </div>
                   </div>
-                  <div className={styles.marketPriceArea} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div className={styles.marketPriceArea} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     {!isTriggered && price && (
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '12px', color: '#888' }}>Current</div>
@@ -171,6 +253,11 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
                       <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: 'bold' }}>
                         TRIGGERED
                       </div>
+                    )}
+                    {!isTriggered && (
+                      <button onClick={() => startEdit(a)} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '5px', fontSize: '14px' }}>
+                        Edit
+                      </button>
                     )}
                     <button onClick={() => handleRemove(a.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '5px' }}>
                       <Trash2 size={18} />
