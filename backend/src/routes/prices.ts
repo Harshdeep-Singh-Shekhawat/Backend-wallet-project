@@ -3,7 +3,7 @@ import yahooFinanceModule from 'yahoo-finance2';
 
 const router = Router();
 const YahooFinance = ((yahooFinanceModule as any).default || yahooFinanceModule) as new () => any;
-const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey', 'ripHistorical'] });
+const yahooFinance = new YahooFinance();
 const CRYPTO_SYMBOLS = new Set(['BTC', 'ETH', 'SOL', 'DOGE', 'ADA']);
 
 const toYahooSymbol = (symbol: string) => {

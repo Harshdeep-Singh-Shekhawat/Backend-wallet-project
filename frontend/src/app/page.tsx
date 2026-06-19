@@ -91,6 +91,29 @@ export default function App() {
       if (triggered) {
         toast.success(`🎯 ${alert.symbol} just crossed $${alert.targetPrice.toLocaleString()}!`, { duration: 6000 });
         
+        if (alert.autoTradeType && alert.autoTradeQuantity) {
+          apiFetch(`/api/trade/${alert.autoTradeType.toLowerCase()}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              symbol: alert.symbol,
+              quantity: alert.autoTradeQuantity,
+              currentPrice
+            })
+          }).then(async (res) => {
+            const data = await res.json();
+            if (res.ok) {
+              toast.success(`🤖 Auto-Trade Executed: ${alert.autoTradeType} ${alert.autoTradeQuantity} ${alert.symbol}`, { duration: 8000 });
+              mutatePortfolio();
+              mutateTransactions();
+            } else {
+              toast.error(`❌ Auto-Trade Failed: ${data.error}`, { duration: 8000 });
+            }
+          }).catch((err) => {
+            toast.error(`❌ Auto-Trade Error: ${err.message}`, { duration: 8000 });
+          });
+        }
+
         // Mark as triggered in DB to prevent infinite firing
         apiFetch('/api/alerts', {
           method: 'PATCH',
@@ -99,7 +122,7 @@ export default function App() {
         }).then(() => mutateAlerts());
       }
     });
-  }, [prices, alertsData, mutateAlerts]);
+  }, [prices, alertsData, mutateAlerts, mutatePortfolio, mutateTransactions]);
 
   // Calculate totals
   let totalHoldingsValue = 0;

@@ -84,9 +84,11 @@ model Alert {
   symbol      String
   targetPrice Float
   direction   String   // "ABOVE" or "BELOW"
-  status      String   @default("ACTIVE") // "ACTIVE" or "TRIGGERED"
-  createdAt   DateTime @default(now())
-  triggeredAt DateTime?
+  status            String   @default("ACTIVE") // "ACTIVE" or "TRIGGERED"
+  autoTradeType     String?  // "BUY" or "SELL"
+  autoTradeQuantity Float?
+  createdAt         DateTime @default(now())
+  triggeredAt       DateTime?
 
   user        User     @relation(fields: [userId], references: [id])
 }

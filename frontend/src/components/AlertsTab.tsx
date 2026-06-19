@@ -14,6 +14,8 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
   const [targetPrice, setTargetPrice] = useState('');
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+  const [tradeAction, setTradeAction] = useState('NONE');
+  const [tradeQuantity, setTradeQuantity] = useState('');
 
   const { data, mutate, isLoading } = useSWR('/api/alerts', apiFetcher);
   const alerts = data?.alerts || [];
@@ -37,20 +39,29 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
     const condition = currentPrice > 0 && target > currentPrice ? 'ABOVE' : 'BELOW';
 
     try {
+      const payload: any = {
+        symbol: newSymbol.toUpperCase(), 
+        targetPrice: target, 
+        condition
+      };
+
+      if (tradeAction !== 'NONE' && tradeQuantity) {
+        payload.autoTradeType = tradeAction;
+        payload.autoTradeQuantity = parseFloat(tradeQuantity);
+      }
+
       const res = await apiFetch('/api/alerts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          symbol: newSymbol.toUpperCase(), 
-          targetPrice: target, 
-          condition 
-        }),
+        body: JSON.stringify(payload),
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error);
       
       setNewSymbol('');
       setTargetPrice('');
+      setTradeAction('NONE');
+      setTradeQuantity('');
       onAddSymbol(result.alert.symbol); // Track this symbol for live prices
       mutate();
     } catch (err: any) {
@@ -95,7 +106,26 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
             onChange={(e) => setTargetPrice(e.target.value)}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'rgba(255,255,255,0.05)', color: 'white', flex: 1, minWidth: '150px' }}
           />
-          <button type="submit" disabled={adding || !newSymbol || !targetPrice} style={{ padding: '10px 20px', borderRadius: '8px', background: '#3b82f6', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <select
+            value={tradeAction}
+            onChange={(e) => setTradeAction(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'rgba(255,255,255,0.05)', color: 'white', flex: 1, minWidth: '150px' }}
+          >
+            <option value="NONE" style={{ color: 'black' }}>Notify Only</option>
+            <option value="BUY" style={{ color: 'black' }}>Auto-Buy</option>
+            <option value="SELL" style={{ color: 'black' }}>Auto-Sell</option>
+          </select>
+          {tradeAction !== 'NONE' && (
+            <input
+              type="number"
+              step="any"
+              placeholder="Quantity to Trade"
+              value={tradeQuantity}
+              onChange={(e) => setTradeQuantity(e.target.value)}
+              style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: 'rgba(255,255,255,0.05)', color: 'white', flex: 1, minWidth: '150px' }}
+            />
+          )}
+          <button type="submit" disabled={adding || !newSymbol || !targetPrice || (tradeAction !== 'NONE' && !tradeQuantity)} style={{ padding: '10px 20px', borderRadius: '8px', background: '#3b82f6', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
             {adding ? <Loader2 size={16} className="spin" /> : <Plus size={16} />} Create Alert
           </button>
         </form>
@@ -120,7 +150,14 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
                     </div>
                     <div>
                       <div className={styles.marketSymbol}>{sym}</div>
-                      <div className={styles.marketType}>{a.direction} ${a.targetPrice.toLocaleString()}</div>
+                      <div className={styles.marketType}>
+                        {a.direction} ${a.targetPrice.toLocaleString()}
+                        {a.autoTradeType && (
+                          <span style={{ marginLeft: '10px', color: '#3b82f6', fontWeight: 'bold' }}>
+                            | AUTO {a.autoTradeType} {a.autoTradeQuantity}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className={styles.marketPriceArea} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
