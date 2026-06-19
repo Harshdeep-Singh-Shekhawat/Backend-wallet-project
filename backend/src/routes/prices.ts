@@ -1,7 +1,15 @@
 import { Router } from 'express';
-import yahooFinance from 'yahoo-finance2';
+import yahooFinanceModule from 'yahoo-finance2';
 
 const router = Router();
+const YahooFinance = ((yahooFinanceModule as any).default || yahooFinanceModule) as new () => any;
+const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey', 'ripHistorical'] });
+const CRYPTO_SYMBOLS = new Set(['BTC', 'ETH', 'SOL', 'DOGE', 'ADA']);
+
+const toYahooSymbol = (symbol: string) => {
+  const cleanSymbol = symbol.trim().toUpperCase();
+  return CRYPTO_SYMBOLS.has(cleanSymbol) ? `${cleanSymbol}-USD` : cleanSymbol;
+};
 
 router.get('/', async (req, res) => {
   try {
@@ -10,15 +18,18 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: 'Symbols parameter is required' });
     }
 
-    const symbols = symbolsParam.split(',');
+    const symbols = symbolsParam
+      .split(',')
+      .map((symbol) => symbol.trim().toUpperCase())
+      .filter(Boolean);
     
     // Fetch quotes in parallel
     const quotes = await Promise.all(
       symbols.map(async (symbol) => {
         try {
-          const result = await yahooFinance.quote(symbol) as any;
+          const result = await yahooFinance.quote(toYahooSymbol(symbol)) as any;
           return {
-            symbol: result.symbol,
+            symbol,
             price: result.regularMarketPrice,
             change: result.regularMarketChange,
             changePercent: result.regularMarketChangePercent,
@@ -34,11 +45,13 @@ router.get('/', async (req, res) => {
     // Filter out failed quotes
     const validQuotes = quotes.filter(Boolean);
 
-    // Format as a map: { 'AAPL': { price: 150, change: 1.5, ... } }
+    // Format as a map: { AAPL: 150, BTC: 63165 }, which is what the frontend reads.
     const priceMap = validQuotes.reduce((acc, quote: any) => {
-      acc[quote.symbol] = quote;
+      if (typeof quote.price === 'number') {
+        acc[quote.symbol] = quote.price;
+      }
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, number>);
 
     return res.json({ prices: priceMap });
   } catch (error) {
@@ -86,16 +99,18 @@ router.get('/history', async (req, res) => {
         interval = '1d';
     }
 
-    const result = (await yahooFinance.historical(symbol, {
+    const result = (await yahooFinance.chart(toYahooSymbol(symbol), {
       period1,
       period2: now,
       interval,
-    })) as any[];
+    })) as { quotes?: any[] };
 
-    const formattedData = result.map((item: any) => ({
-      date: item.date,
-      price: item.close,
-    }));
+    const formattedData = (result.quotes || [])
+      .map((item: any) => ({
+        date: item.date,
+        price: item.close,
+      }))
+      .filter((item) => item.date && typeof item.price === 'number');
 
     return res.json({ history: formattedData });
   } catch (error) {

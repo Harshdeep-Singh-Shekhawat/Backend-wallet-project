@@ -40,7 +40,7 @@ router.post('/signup', async (req, res) => {
 
     res.cookie('token', token, authCookieOptions());
 
-    return res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -67,7 +67,7 @@ router.post('/login', async (req, res) => {
 
     res.cookie('token', token, authCookieOptions());
 
-    return res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -151,7 +151,9 @@ router.get('/google/callback', async (req, res) => {
 
     res.cookie('token', token, authCookieOptions());
 
-    return res.redirect(FRONTEND_URL);
+    const redirectUrl = new URL(FRONTEND_URL);
+    redirectUrl.searchParams.set('token', token);
+    return res.redirect(redirectUrl.toString());
   } catch (error) {
     console.error('Google Auth Error:', error);
     return res.redirect(`${FRONTEND_URL}?error=GoogleAuthFailed`);

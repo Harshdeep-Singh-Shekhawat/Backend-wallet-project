@@ -1,9 +1,36 @@
 import type { Config, Context, HandlerEvent, HandlerResponse } from '@netlify/functions';
+import dotenv from 'dotenv';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import serverless from 'serverless-http';
 
-import { app } from '../../src/app';
+const loadEnv = () => {
+  const envPaths = [
+    resolve(process.cwd(), '.env'),
+    resolve(process.cwd(), 'netlify/functions/.env'),
+    resolve(__dirname, '.env'),
+    resolve(__dirname, '../../.env'),
+  ];
 
-const handler = serverless(app);
+  for (const envPath of envPaths) {
+    if (existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+      return;
+    }
+  }
+};
+
+let handler: ReturnType<typeof serverless> | undefined;
+
+const getHandler = async () => {
+  if (!handler) {
+    loadEnv();
+    const { app } = await import('../../src/app');
+    handler = serverless(app);
+  }
+
+  return handler;
+};
 
 const toEvent = async (req: Request): Promise<HandlerEvent> => {
   const url = new URL(req.url);
@@ -50,9 +77,11 @@ const toResponse = (result: HandlerResponse): Response => {
     }
   }
 
-  const body = result.isBase64Encoded && result.body
-    ? Buffer.from(result.body, 'base64')
-    : result.body;
+  const body = [204, 304].includes(result.statusCode)
+    ? null
+    : result.isBase64Encoded && result.body
+      ? Buffer.from(result.body, 'base64')
+      : result.body;
 
   return new Response(body, {
     status: result.statusCode,
@@ -61,6 +90,7 @@ const toResponse = (result: HandlerResponse): Response => {
 };
 
 export default async (req: Request, context: Context) => {
+  const handler = await getHandler();
   const event = await toEvent(req);
   const result = await handler(event, context as never);
 

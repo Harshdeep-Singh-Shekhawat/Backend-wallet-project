@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { apiFetch, API_URL } from '@/lib/api';
+import { apiFetch, API_URL, setAuthToken } from '@/lib/api';
 import styles from './AuthScreen.module.css';
 
 interface AuthScreenProps {
@@ -16,15 +16,23 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if there's an OAuth error in URL params
     const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      setAuthToken(token);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      onSuccess();
+      return;
+    }
+
+    // Check if there's an OAuth error in URL params
     const errParam = params.get('error');
     if (errParam) {
       if (errParam === 'oauth_failed') setError('Google authentication failed.');
       else if (errParam === 'missing_code') setError('Missing authorization code.');
       else if (errParam === 'oauth_exception') setError('An error occurred during Google sign in.');
     }
-  }, []);
+  }, [onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +53,10 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
 
       if (!res.ok) {
         throw new Error(data.error || 'Authentication failed');
+      }
+
+      if (data.token) {
+        setAuthToken(data.token);
       }
 
       onSuccess();

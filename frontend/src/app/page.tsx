@@ -14,7 +14,7 @@ import AuthScreen from '@/components/AuthScreen';
 import WatchlistTab from '@/components/WatchlistTab';
 import AlertsTab from '@/components/AlertsTab';
 import { Loader2, ArrowUpRight, ArrowDownRight, Wallet as WalletIcon, Clock, Shield, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-import { apiFetch, apiFetcher } from '@/lib/api';
+import { apiFetch, apiFetcher, clearAuthToken } from '@/lib/api';
 import styles from './page.module.css';
 
 const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
@@ -172,6 +172,7 @@ export default function App() {
 
   const handleLogout = async () => {
     await apiFetch('/api/auth/logout', { method: 'POST' });
+    clearAuthToken();
     mutateAuth();
   };
 

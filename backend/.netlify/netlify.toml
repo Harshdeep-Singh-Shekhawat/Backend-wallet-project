@@ -1,0 +1,33 @@
+functionsDirectory = "D:\\New backend project\\wallet-app\\backend\\netlify\\functions"
+functionsDirectoryOrigin = "config"
+plugins = []
+headers = []
+redirects = []
+
+[build]
+publish = "D:\\New backend project\\wallet-app\\backend\\public"
+publishOrigin = "config"
+commandOrigin = "config"
+base = "D:\\New backend project\\wallet-app\\backend"
+command = "npm run build"
+functions = "D:\\New backend project\\wallet-app\\backend\\netlify\\functions"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[functions]
+
+[functions."*"]
+included_files = ["prisma/schema.prisma", ".env", "netlify/functions/.env"]
+node_bundler = "esbuild"

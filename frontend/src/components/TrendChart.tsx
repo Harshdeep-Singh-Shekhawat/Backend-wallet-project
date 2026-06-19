@@ -13,7 +13,10 @@ interface TrendChartProps {
 export default function TrendChart({ symbol }: TrendChartProps) {
   const [range, setRange] = useState('1mo');
   
-  const { data, isLoading } = useSWR(`/api/prices/history?symbol=${symbol}&range=${range}`, apiFetcher);
+  const { data, error, isLoading } = useSWR(
+    symbol ? `/api/prices/history?symbol=${encodeURIComponent(symbol)}&range=${range}` : null,
+    apiFetcher,
+  );
   
   const history = data?.history || [];
 
@@ -57,10 +60,10 @@ export default function TrendChart({ symbol }: TrendChartProps) {
   // Determine if trend is up or down to color the chart
   const isUp = history.length >= 2 ? history[history.length - 1].price >= history[0].price : true;
   const strokeColor = isUp ? '#10b981' : '#ef4444'; // Emerald for up, Red for down
-  const fillColor = isUp ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+  const gradientId = `colorPrice-${symbol}-${range}`.replace(/[^a-zA-Z0-9_-]/g, '-');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '300px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '350px', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
           {symbol} Trend
@@ -71,8 +74,8 @@ export default function TrendChart({ symbol }: TrendChartProps) {
               key={r}
               onClick={() => setRange(r)}
               style={{
-                background: range === r ? 'var(--color-accent)' : 'transparent',
-                color: range === r ? '#fff' : 'var(--color-text-secondary)',
+                background: range === r ? '#10b981' : 'transparent',
+                color: range === r ? '#031712' : 'var(--color-text-secondary)',
                 border: 'none',
                 padding: '4px 8px',
                 borderRadius: '4px',
@@ -88,10 +91,14 @@ export default function TrendChart({ symbol }: TrendChartProps) {
         </div>
       </div>
 
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         {isLoading ? (
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <Loader2 className="animate-spin" size={24} color="var(--color-text-muted)" />
+          </div>
+        ) : error || data?.error ? (
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'var(--color-text-muted)', fontSize: '14px', textAlign: 'center' }}>
+            {data?.error || 'Trend data could not be loaded'}
           </div>
         ) : history.length === 0 ? (
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'var(--color-text-muted)', fontSize: '14px' }}>
@@ -101,7 +108,7 @@ export default function TrendChart({ symbol }: TrendChartProps) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={history} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={strokeColor} stopOpacity={0.3}/>
                   <stop offset="95%" stopColor={strokeColor} stopOpacity={0}/>
                 </linearGradient>
@@ -126,7 +133,7 @@ export default function TrendChart({ symbol }: TrendChartProps) {
                 stroke={strokeColor} 
                 strokeWidth={2}
                 fillOpacity={1} 
-                fill="url(#colorPrice)" 
+                fill={`url(#${gradientId})`}
                 isAnimationActive={false}
               />
             </AreaChart>
