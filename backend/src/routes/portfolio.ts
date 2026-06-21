@@ -25,14 +25,12 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
 
     return res.json({
       fiatBalance: user.fiatBalance,
-      lockedFiatBalance: user.lockedFiatBalance,
       holdings: user.portfolios.map((p) => ({
         id: p.id,
         symbol: p.asset.symbol,
         name: p.asset.name,
         type: p.asset.type,
         quantity: p.quantity,
-        lockedQuantity: p.lockedQuantity,
         averagePurchasePrice: p.averagePurchasePrice,
       })),
     });

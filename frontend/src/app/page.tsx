@@ -73,7 +73,7 @@ export default function App() {
   // Merge fast WS prices over HTTP polled prices
   const prices = { ...(pricesData?.prices || {}), ...wsPrices };
   const fiatBalance = portfolioData?.fiatBalance || 0;
-  const lockedFiatBalance = portfolioData?.lockedFiatBalance || 0;
+
   const transactions = transactionsData?.transactions || [];
 
   // Alert Engine (Client-Side)
@@ -216,7 +216,7 @@ export default function App() {
             <PortfolioOverview
               totalValue={totalHoldingsValue}
               fiatBalance={fiatBalance}
-              lockedFiatBalance={lockedFiatBalance}
+
               totalCost={totalCost}
               totalPnL={totalPnL}
               pnlPercentage={pnlPercentage}
