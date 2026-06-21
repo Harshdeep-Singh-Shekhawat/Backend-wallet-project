@@ -15,6 +15,7 @@ interface TradeWidgetProps {
 
 export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, onTradeSuccess }: TradeWidgetProps) {
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL'>('BUY');
+  const [inputType, setInputType] = useState<'QUANTITY' | 'AMOUNT'>('QUANTITY');
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,9 +24,18 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
   const currentPrice = prices[symbol] || 0;
   const numInput = parseFloat(inputValue) || 0;
   
-  const executionPrice = currentPrice;
-  const calculatedQuantity = numInput;
-  const calculatedAmount = calculatedQuantity * executionPrice;
+  let calculatedQuantity = 0;
+  let calculatedAmount = 0;
+
+  if (currentPrice > 0) {
+    if (inputType === 'QUANTITY') {
+      calculatedQuantity = numInput;
+      calculatedAmount = calculatedQuantity * currentPrice;
+    } else {
+      calculatedAmount = numInput;
+      calculatedQuantity = calculatedAmount / currentPrice;
+    }
+  }
 
   const balanceAfterTrade = activeTab === 'BUY' ? fiatBalance - calculatedAmount : fiatBalance + calculatedAmount;
 
@@ -64,11 +74,28 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
     }
   };
 
+  const handleIncrement = () => {
+    setInputValue((prev) => {
+      const val = parseFloat(prev) || 0;
+      const step = inputType === 'QUANTITY' ? 1 : 10;
+      return (val + step).toString();
+    });
+  };
+
+  const handleDecrement = () => {
+    setInputValue((prev) => {
+      const val = parseFloat(prev) || 0;
+      const step = inputType === 'QUANTITY' ? 1 : 10;
+      const newVal = val - step;
+      return newVal > 0 ? newVal.toString() : '0';
+    });
+  };
+
   return (
     <div className={`glass-panel ${styles.widget}`}>
       
       <div className={styles.header}>
-        <h3 className={styles.title}>Trade</h3>
+        <h3 className={styles.title}>Trade {symbol}</h3>
         <div className={styles.availableBadge}>
           Available: <span className={styles.availableAmount}>${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
@@ -93,31 +120,56 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
       <form onSubmit={handleTrade} className={styles.form}>
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
-            <label className={styles.label}>Quantity</label>
-            <span className={styles.priceBadge}>
-              {currentPrice ? `Live: $${currentPrice.toLocaleString()}` : 'Loading...'}
-            </span>
+            <label className={styles.label}>
+              {inputType === 'QUANTITY' ? 'Quantity' : 'Amount (USD)'}
+            </label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                type="button"
+                className={styles.modeToggleBtn}
+                onClick={() => setInputType(inputType === 'QUANTITY' ? 'AMOUNT' : 'QUANTITY')}
+              >
+                Switch to {inputType === 'QUANTITY' ? 'Amount' : 'Quantity'}
+              </button>
+              <span className={styles.priceBadge}>
+                {currentPrice ? `Live: $${currentPrice.toLocaleString()}` : 'Loading...'}
+              </span>
+            </div>
           </div>
-          <input
-            type="number"
-            step="any"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="0.00"
-            className={styles.input}
-            required
-          />
+          
+          <div className={styles.inputWithButtons}>
+            <button type="button" className={styles.qtyBtn} onClick={handleDecrement}>-</button>
+            <input
+              type="number"
+              step="any"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="0.00"
+              required
+            />
+            <button type="button" className={styles.qtyBtn} onClick={handleIncrement}>+</button>
+          </div>
         </div>
 
         <div className={styles.summaryBox}>
-          <div className={styles.summaryRow}>
-            <span className={styles.summaryLabel}>
-              {activeTab === 'BUY' ? 'Total Cost' : 'Total Return'}
-            </span>
-            <span className={styles.summaryValueBig}>
-              ${calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
+          {inputType === 'AMOUNT' ? (
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>Calculated Quantity</span>
+              <span className={styles.summaryValueSmall}>
+                {calculatedQuantity.toLocaleString(undefined, { maximumFractionDigits: 8 })} {symbol}
+              </span>
+            </div>
+          ) : (
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryLabel}>
+                {activeTab === 'BUY' ? 'Total Cost' : 'Total Return'}
+              </span>
+              <span className={styles.summaryValueBig}>
+                ${calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          )}
+          
           <div className={styles.summaryRowDivider}>
             <span className={styles.summaryLabel}>Balance After Trade</span>
             <span className={balanceAfterTrade < 0 ? styles.summaryValueNegative : styles.summaryValueSmall}>
@@ -140,7 +192,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
 
         <button
           type="submit"
-          disabled={isLoading || executionPrice <= 0 || calculatedQuantity <= 0}
+          disabled={isLoading || currentPrice <= 0 || calculatedQuantity <= 0}
           className={`${styles.submitBtn} ${activeTab === 'BUY' ? styles.submitBtnBuy : styles.submitBtnSell}`}
         >
           {isLoading && <Loader2 className={styles.loader} size={20} />}

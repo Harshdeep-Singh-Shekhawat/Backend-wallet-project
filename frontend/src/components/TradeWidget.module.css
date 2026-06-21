@@ -254,5 +254,59 @@
 
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+}
+
+.inputWithButtons {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.inputWithButtons:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.inputWithButtons input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 14px 16px;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  outline: none;
+}
+
+.inputWithButtons input::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.qtyBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0 16px;
+  cursor: pointer;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.qtyBtn:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(255,255,255,0.05);
+}
+
+.qtyBtn:active {
+  background-color: rgba(255,255,255,0.1);
 }
