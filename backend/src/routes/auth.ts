@@ -160,4 +160,49 @@ router.get('/google/callback', async (req, res) => {
   }
 });
 
+router.patch('/profile', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name is required' });
+
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { name },
+    });
+
+    return res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+router.patch('/password', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Missing password fields' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || !user.password) {
+      return res.status(400).json({ error: 'Cannot change password for this account type' });
+    }
+
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) {
+      return res.status(400).json({ error: 'Incorrect current password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { password: hashedPassword },
+    });
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

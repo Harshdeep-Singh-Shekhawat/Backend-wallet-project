@@ -30,6 +30,27 @@
   --color-danger: #ef4444;
 }
 
+[data-theme='light'] {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
+  --color-surface-active: #e2e8f0;
+  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-focus: rgba(0, 0, 0, 0.15);
+  
+  --color-accent: #0f172a;
+  --color-accent-hover: #334155;
+  --color-accent-text: #ffffff;
+  
+  --color-success: #059669;
+  --color-danger: #dc2626;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
@@ -37,6 +58,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar */
@@ -74,4 +96,5 @@ input[type="number"] {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 20px; /* matched to screenshot */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }

@@ -13,6 +13,7 @@ import TrendChart from '@/components/TrendChart';
 import AuthScreen from '@/components/AuthScreen';
 import WatchlistTab from '@/components/WatchlistTab';
 import AlertsTab from '@/components/AlertsTab';
+import SettingsTab from '@/components/SettingsTab';
 import { Loader2, ArrowUpRight, ArrowDownRight, Wallet as WalletIcon, Clock, Shield, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { apiFetch, apiFetcher, clearAuthToken } from '@/lib/api';
 import styles from './page.module.css';
@@ -427,6 +428,10 @@ export default function App() {
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'Settings' && (
+          <SettingsTab user={authData?.user} onUpdateUser={() => mutateAuth()} />
         )}
 
       </div>
