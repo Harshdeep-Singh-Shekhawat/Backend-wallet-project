@@ -4,6 +4,15 @@ import { requireAuth, AuthRequest } from '../lib/auth';
 
 const router = Router();
 
+router.get('/assets', requireAuth, async (req, res) => {
+  try {
+    const assets = await prisma.asset.findMany();
+    return res.json({ assets });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/buy', requireAuth, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
@@ -38,6 +47,18 @@ router.post('/buy', requireAuth, async (req: AuthRequest, res) => {
         where: { id: userId },
         data: { fiatBalance: { decrement: totalCost } },
       });
+
+      // 3.5 Check and deduct market supply
+      const txAsset = await tx.asset.findUnique({ where: { id: asset!.id } });
+      if (txAsset && txAsset.availableSupply !== null) {
+        if (txAsset.availableSupply < quantity) {
+          throw new Error(`Insufficient market supply. Only ${txAsset.availableSupply} ${symbol} available.`);
+        }
+        await tx.asset.update({
+          where: { id: txAsset.id },
+          data: { availableSupply: { decrement: quantity } }
+        });
+      }
 
       // 4. Add to portfolio
       const portfolio = await tx.portfolio.findUnique({
@@ -140,6 +161,14 @@ router.post('/sell', requireAuth, async (req: AuthRequest, res) => {
           totalValue: totalReturn,
         },
       });
+
+      // 6. Increase market supply
+      if (asset.availableSupply !== null) {
+        await tx.asset.update({
+          where: { id: asset.id },
+          data: { availableSupply: { increment: quantity } }
+        });
+      }
 
       return { success: true };
     });

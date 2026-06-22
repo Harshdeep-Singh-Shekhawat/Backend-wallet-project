@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import useSWR from 'swr';
 import { Loader2 } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, apiFetcher } from '@/lib/api';
 import styles from './TradeWidget.module.css';
 
 interface TradeWidgetProps {
@@ -21,6 +22,10 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  const { data: assetsData, mutate: mutateAssets } = useSWR('/api/trade/assets', apiFetcher);
+  const currentAsset = assetsData?.assets?.find((a: any) => a.symbol === symbol);
+  const marketSupply = currentAsset?.availableSupply;
+
   const currentPrice = prices[symbol] || 0;
   const numInput = parseFloat(inputValue) || 0;
   
@@ -38,10 +43,11 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
   }
 
   const balanceAfterTrade = activeTab === 'BUY' ? fiatBalance - calculatedAmount : fiatBalance + calculatedAmount;
+  const exceedsSupply = activeTab === 'BUY' && marketSupply !== null && marketSupply !== undefined && calculatedQuantity > marketSupply;
 
   const handleTrade = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!symbol || !inputValue || calculatedQuantity <= 0) return;
+    if (!symbol || !inputValue || calculatedQuantity <= 0 || exceedsSupply) return;
 
     setIsLoading(true);
     setError('');
@@ -65,6 +71,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
       setInputValue('');
       setSuccessMsg(`Successfully ${activeTab === 'BUY' ? 'bought' : 'sold'} ${symbol}`);
       onTradeSuccess();
+      mutateAssets();
       
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err: any) {
@@ -126,6 +133,11 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
             <span className={styles.priceBadge}>
               {currentPrice ? `Live: $${currentPrice.toLocaleString()}` : 'Loading...'}
             </span>
+            {marketSupply !== null && marketSupply !== undefined && (
+              <span className={styles.priceBadge} style={{ marginLeft: '8px', background: 'rgba(234, 179, 8, 0.1)', color: '#eab308' }}>
+                Supply: {marketSupply.toLocaleString(undefined, { maximumFractionDigits: 8 })}
+              </span>
+            )}
           </div>
           
           <div className={styles.segmentedToggle}>
@@ -192,6 +204,12 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
           </div>
         )}
 
+        {exceedsSupply && !error && (
+          <div className={styles.messageError}>
+            Exceeds available market supply of {marketSupply.toLocaleString(undefined, { maximumFractionDigits: 8 })}.
+          </div>
+        )}
+
         {successMsg && (
           <div className={styles.messageSuccess}>
             {successMsg}
@@ -200,7 +218,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
 
         <button
           type="submit"
-          disabled={isLoading || currentPrice <= 0 || calculatedQuantity <= 0}
+          disabled={isLoading || currentPrice <= 0 || calculatedQuantity <= 0 || exceedsSupply}
           className={`${styles.submitBtn} ${activeTab === 'BUY' ? styles.submitBtnBuy : styles.submitBtnSell}`}
         >
           {isLoading && <Loader2 className={styles.loader} size={20} />}

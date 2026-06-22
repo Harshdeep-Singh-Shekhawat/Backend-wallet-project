@@ -11,6 +11,7 @@ import HoldingsTable, { Holding } from '@/components/HoldingsTable';
 import TradeWidget from '@/components/TradeWidget';
 import AssetChart from '@/components/AssetChart';
 import AuthScreen from '@/components/AuthScreen';
+import AdminTab from '@/components/AdminTab';
 
 const TrendChart = dynamic(() => import('@/components/TrendChart'), {
   loading: () => <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 className={styles.loader} /></div>,
@@ -451,6 +452,10 @@ export default function App() {
 
         {activeTab === 'Settings' && (
           <SettingsTab user={authData?.user} onUpdateUser={() => mutateAuth()} />
+        )}
+
+        {activeTab === 'Admin Console' && (
+          <AdminTab />
         )}
 
       </div>

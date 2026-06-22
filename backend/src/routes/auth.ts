@@ -40,7 +40,7 @@ router.post('/signup', async (req, res) => {
 
     res.cookie('token', token, authCookieOptions());
 
-    return res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -67,7 +67,7 @@ router.post('/login', async (req, res) => {
 
     res.cookie('token', token, authCookieOptions());
 
-    return res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -89,7 +89,7 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found', authenticated: false });
     }
-    return res.json({ authenticated: true, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ authenticated: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
     return res.status(500).json({ authenticated: false });
   }
@@ -170,7 +170,7 @@ router.patch('/profile', requireAuth, async (req: AuthRequest, res) => {
       data: { name },
     });
 
-    return res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }

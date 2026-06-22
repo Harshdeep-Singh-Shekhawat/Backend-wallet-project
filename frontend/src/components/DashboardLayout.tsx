@@ -7,7 +7,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  user?: { name: string; email: string };
+  user?: { name: string; email: string; role?: string };
   onLogout?: () => void;
 }
 
@@ -21,6 +21,10 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
     { id: 'Alerts', icon: <BellRing size={18} />, label: 'Price Alerts' },
     { id: 'Settings', icon: <Settings size={18} />, label: 'Settings' },
   ];
+
+  if (user?.role === 'ADMIN') {
+    menuItems.push({ id: 'Admin Console', icon: <Settings size={18} />, label: 'Admin Console' });
+  }
 
   const [theme, setTheme] = useState('dark');
 

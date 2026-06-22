@@ -14,6 +14,7 @@ model User {
   email       String   @unique
   password    String?
   name              String
+  role              String   @default("USER") // "USER" or "ADMIN"
   fiatBalance       Float    @default(0.0)
   createdAt         DateTime @default(now())
 
@@ -25,10 +26,11 @@ model User {
 
 model Asset {
   id        String   @id @default(uuid())
-  symbol    String   @unique
-  name      String
-  type      String   // "CRYPTO" or "STOCK"
-  createdAt DateTime @default(now())
+  symbol          String   @unique
+  name            String
+  type            String   // "CRYPTO" or "STOCK"
+  availableSupply Float?   // null means infinite, number means strict limit
+  createdAt       DateTime @default(now())
 
   portfolios   Portfolio[]
   transactions Transaction[]

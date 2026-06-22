@@ -10,6 +10,7 @@ import tradeRoutes from './routes/trade';
 import walletRoutes from './routes/wallet';
 import watchlistRoutes from './routes/watchlist';
 import alertsRoutes from './routes/alerts';
+import adminRoutes from './routes/admin';
 
 export const app = express();
 
@@ -38,3 +39,4 @@ app.use('/api/trade', tradeRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/alerts', alertsRoutes);
+app.use('/api/admin', adminRoutes);
