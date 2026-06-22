@@ -1,5 +1,5 @@
-import React from 'react';
-import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, User, LogOut, Eye, BellRing, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, User, LogOut, Eye, BellRing, Settings, Sun, Moon } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import styles from './DashboardLayout.module.css';
 
@@ -22,14 +22,37 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
     { id: 'Settings', icon: <Settings size={18} />, label: 'Settings' },
   ];
 
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme') || 'dark';
+    setTheme(currentTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
   return (
     <div className={styles.layout}>
       <Toaster position="top-right" toastOptions={{ style: { background: '#333', color: '#fff', border: '1px solid #444' } }} />
       {/* Sidebar */}
       <aside className={styles.sidebar}>
-        <div className={styles.logoArea}>
-          <div className={styles.logoIcon}>N</div>
-          <span className={styles.logoText}>NeoTrade</span>
+        <div className={styles.logoArea} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className={styles.logoIcon}>N</div>
+            <span className={styles.logoText}>NeoTrade</span>
+          </div>
+          <button 
+            onClick={toggleTheme} 
+            style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} 
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
         </div>
         
         <nav className={styles.nav}>
