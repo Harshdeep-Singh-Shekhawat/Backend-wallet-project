@@ -19,7 +19,7 @@ router.post('/buy', requireAuth, async (req: AuthRequest, res) => {
     let asset = await prisma.asset.findUnique({ where: { symbol } });
     if (!asset) {
       asset = await prisma.asset.create({
-        data: { symbol, name: symbol, type: 'CRYPTO' }, // defaulting to CRYPTO for unknown
+        data: { symbol, name: symbol, type: 'CRYPTO', availableSupply: 1000.0 }, // defaulting to CRYPTO and 1000 supply
       });
     }
 
@@ -38,6 +38,17 @@ router.post('/buy', requireAuth, async (req: AuthRequest, res) => {
         where: { id: userId },
         data: { fiatBalance: { decrement: totalCost } },
       });
+
+      // 3.5. Enforce and deduct asset supply
+      if (asset!.availableSupply !== null) {
+        if (asset!.availableSupply < quantity) {
+          throw new Error('Insufficient exchange liquidity for this asset');
+        }
+        await tx.asset.update({
+          where: { id: asset!.id },
+          data: { availableSupply: { decrement: quantity } },
+        });
+      }
 
       // 4. Add to portfolio
       const portfolio = await tx.portfolio.findUnique({
@@ -128,6 +139,14 @@ router.post('/sell', requireAuth, async (req: AuthRequest, res) => {
         where: { id: userId },
         data: { fiatBalance: { increment: totalReturn } },
       });
+
+      // 4.5. Replenish asset supply
+      if (asset.availableSupply !== null) {
+        await tx.asset.update({
+          where: { id: asset.id },
+          data: { availableSupply: { increment: quantity } },
+        });
+      }
 
       // 5. Log Transaction
       await tx.transaction.create({
