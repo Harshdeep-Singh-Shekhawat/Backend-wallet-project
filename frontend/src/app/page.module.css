@@ -91,10 +91,17 @@
   margin-bottom: 24px;
 }
 
+.tradeListCard {
+  max-height: calc(100vh - 160px);
+  overflow: hidden;
+}
+
 .marketList {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .marketRow {

@@ -123,18 +123,26 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
             <label className={styles.label}>
               {inputType === 'QUANTITY' ? 'Quantity' : 'Amount (USD)'}
             </label>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button
-                type="button"
-                className={styles.modeToggleBtn}
-                onClick={() => setInputType(inputType === 'QUANTITY' ? 'AMOUNT' : 'QUANTITY')}
-              >
-                Switch to {inputType === 'QUANTITY' ? 'Amount' : 'Quantity'}
-              </button>
-              <span className={styles.priceBadge}>
-                {currentPrice ? `Live: $${currentPrice.toLocaleString()}` : 'Loading...'}
-              </span>
-            </div>
+            <span className={styles.priceBadge}>
+              {currentPrice ? `Live: $${currentPrice.toLocaleString()}` : 'Loading...'}
+            </span>
+          </div>
+          
+          <div className={styles.segmentedToggle}>
+            <button
+              type="button"
+              className={`${styles.segmentedBtn} ${inputType === 'QUANTITY' ? styles.segmentedBtnActive : ''}`}
+              onClick={() => setInputType('QUANTITY')}
+            >
+              Quantity
+            </button>
+            <button
+              type="button"
+              className={`${styles.segmentedBtn} ${inputType === 'AMOUNT' ? styles.segmentedBtnActive : ''}`}
+              onClick={() => setInputType('AMOUNT')}
+            >
+              Amount (USD)
+            </button>
           </div>
           
           <div className={styles.inputWithButtons}>

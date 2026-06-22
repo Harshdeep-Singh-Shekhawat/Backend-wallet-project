@@ -4,13 +4,18 @@ import { useState, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import toast from 'react-hot-toast';
 import { useWebSocketPrices } from '@/hooks/useWebSocketPrices';
+import dynamic from 'next/dynamic';
 import DashboardLayout from '@/components/DashboardLayout';
 import PortfolioOverview from '@/components/PortfolioOverview';
 import HoldingsTable, { Holding } from '@/components/HoldingsTable';
 import TradeWidget from '@/components/TradeWidget';
 import AssetChart from '@/components/AssetChart';
-import TrendChart from '@/components/TrendChart';
 import AuthScreen from '@/components/AuthScreen';
+
+const TrendChart = dynamic(() => import('@/components/TrendChart'), {
+  loading: () => <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 className={styles.loader} /></div>,
+  ssr: false
+});
 import WatchlistTab from '@/components/WatchlistTab';
 import AlertsTab from '@/components/AlertsTab';
 import SettingsTab from '@/components/SettingsTab';
@@ -25,6 +30,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('Portfolio');
   const [tradeSymbolCrypto, setTradeSymbolCrypto] = useState('BTC');
   const [tradeSymbolStock, setTradeSymbolStock] = useState('AAPL');
+  const [tradeViewMode, setTradeViewMode] = useState<'LIST' | 'CHART'>('LIST');
+
+  useEffect(() => {
+    setTradeViewMode('LIST');
+  }, [activeTab]);
 
   // Wallet form state
   const [walletAction, setWalletAction] = useState<'deposit' | 'withdraw' | null>(null);
@@ -249,49 +259,58 @@ export default function App() {
         {(activeTab === 'Trade Crypto' || activeTab === 'Trade Stocks') && (
           <div className={styles.grid}>
             <div className={styles.colSpan2}>
-              <div className={`glass-panel ${styles.card}`}>
-                 <h3 className={styles.cardTitleBig}>Live Markets ({activeTab.split(' ')[1]})</h3>
-                 <p className={styles.cardDesc}>Real-time quotes powered by Yahoo Finance. Click an asset to select it for trading.</p>
-                 
-                 <div className={styles.marketList}>
-                    {Array.from(new Set([
-                      ...(activeTab === 'Trade Crypto' ? DEFAULT_CRYPTO : DEFAULT_STOCKS),
-                      ...(activeTab === 'Trade Crypto' ? [tradeSymbolCrypto] : [tradeSymbolStock])
-                    ])).map((sym) => {
-                      if (!sym) return null;
-                      // Determine if price is up or down pseudo-randomly for visual demo 
-                      // (in a real app, we'd fetch previous close price to compare)
-                      const isUp = prices[sym] ? (prices[sym].toString().charCodeAt(0) % 2 === 0) : true;
-                      const isSelected = activeTab === 'Trade Crypto' ? sym === tradeSymbolCrypto : sym === tradeSymbolStock;
-                      
-                      return (
-                      <div 
-                        key={sym} 
-                        onClick={() => activeTab === 'Trade Crypto' ? setTradeSymbolCrypto(sym) : setTradeSymbolStock(sym)} 
-                        className={`${styles.marketRow} ${isSelected ? styles.marketRowSelected : ''}`}
-                      >
-                        <div className={styles.marketIconArea}>
-                          <div className={styles.marketIcon}>
-                            {sym[0]}
+              {tradeViewMode === 'LIST' ? (
+                <div className={`glass-panel ${styles.card} ${styles.tradeListCard}`}>
+                   <h3 className={styles.cardTitleBig}>Live Markets ({activeTab.split(' ')[1]})</h3>
+                   <p className={styles.cardDesc}>Real-time quotes powered by Yahoo Finance. Click an asset to view its chart and trade.</p>
+                   
+                   <div className={styles.marketList}>
+                      {Array.from(new Set([
+                        ...(activeTab === 'Trade Crypto' ? DEFAULT_CRYPTO : DEFAULT_STOCKS),
+                      ])).map((sym) => {
+                        if (!sym) return null;
+                        const isUp = prices[sym] ? (prices[sym].toString().charCodeAt(0) % 2 === 0) : true;
+                        
+                        return (
+                        <div 
+                          key={sym} 
+                          onClick={() => {
+                            if (activeTab === 'Trade Crypto') setTradeSymbolCrypto(sym);
+                            else setTradeSymbolStock(sym);
+                            setTradeViewMode('CHART');
+                          }} 
+                          className={styles.marketRow}
+                        >
+                          <div className={styles.marketIconArea}>
+                            <div className={styles.marketIcon}>
+                              {sym[0]}
+                            </div>
+                            <div>
+                              <div className={styles.marketSymbol}>{sym}</div>
+                              <div className={styles.marketType}>{activeTab === 'Trade Crypto' ? 'Crypto' : 'Stock'}</div>
+                            </div>
                           </div>
-                          <div>
-                            <div className={styles.marketSymbol}>{sym}</div>
-                            <div className={styles.marketType}>{activeTab === 'Trade Crypto' ? 'Crypto' : 'Stock'}</div>
+                          <div className={styles.marketPriceArea}>
+                            <div className={styles.marketPrice}>${prices[sym]?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}</div>
+                            <div className={`${styles.marketTrend} ${isUp ? styles.trendUp : styles.trendDown}`}>
+                              {isUp ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>} LIVE
+                            </div>
                           </div>
                         </div>
-                        <div className={styles.marketPriceArea}>
-                          <div className={styles.marketPrice}>${prices[sym]?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}</div>
-                          <div className={`${styles.marketTrend} ${isUp ? styles.trendUp : styles.trendDown}`}>
-                            {isUp ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>} LIVE
-                          </div>
-                        </div>
-                      </div>
-                    )})}
-                 </div>
-              </div>
-              <div className={`glass-panel ${styles.card}`} style={{ marginTop: '24px' }}>
-                <TrendChart symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock} />
-              </div>
+                      )})}
+                   </div>
+                </div>
+              ) : (
+                <div className={`glass-panel ${styles.card}`} style={{ height: '100%', minHeight: '500px' }}>
+                  <button 
+                    onClick={() => setTradeViewMode('LIST')}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 600, width: 'fit-content' }}
+                  >
+                    ← Back to Markets
+                  </button>
+                  <TrendChart symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock} />
+                </div>
+              )}
             </div>
             <div>
               <div className={styles.stickyWidget}>

@@ -51,7 +51,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
             style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} 
             title="Toggle Theme"
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
         </div>
         
