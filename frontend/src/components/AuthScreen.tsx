@@ -67,6 +67,47 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setError('');
+    setLoading(true);
+    
+    const demoEmail = 'demo@example.com';
+    const demoPassword = 'password123';
+    
+    try {
+      let res = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+      });
+      
+      let data = await res.json();
+      
+      if (!res.ok) {
+        res = await apiFetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'Demo User', email: demoEmail, password: demoPassword }),
+        });
+        data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to create demo account');
+        }
+      }
+      
+      if (data.token) {
+        setAuthToken(data.token);
+      }
+      
+      onSuccess();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={`glass-panel ${styles.card}`}>
@@ -129,6 +170,7 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
         <button 
           onClick={() => window.location.href = `${API_URL}/api/auth/google`} 
           className={styles.btnGoogle}
+          type="button"
         >
           <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -137,6 +179,16 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           </svg>
           Google
+        </button>
+
+        <button 
+          onClick={handleDemoLogin} 
+          className={styles.btnGoogle}
+          style={{ marginTop: '12px' }}
+          type="button"
+          disabled={loading}
+        >
+          {loading ? <Loader2 size={16} className={styles.loader} /> : 'Use Demo Account'}
         </button>
 
         <div className={styles.toggleArea}>
