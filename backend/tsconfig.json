@@ -10,7 +10,6 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "target": "esnext",
-    "ignoreDeprecations": "6.0",
     "types": ["node"],
     "esModuleInterop": true,
     // For nodejs:

@@ -27,9 +27,8 @@ model Asset {
   id        String   @id @default(uuid())
   symbol    String   @unique
   name      String
-  type            String   // "CRYPTO" or "STOCK"
-  availableSupply Float?   @default(1000.0)
-  createdAt       DateTime @default(now())
+  type      String   // "CRYPTO" or "STOCK"
+  createdAt DateTime @default(now())
 
   portfolios   Portfolio[]
   transactions Transaction[]
