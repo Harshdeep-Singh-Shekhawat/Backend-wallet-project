@@ -22,6 +22,8 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
     { id: 'Settings', icon: <Settings size={18} />, label: 'Settings' },
   ];
 
+  console.log("DashboardLayout user prop:", user);
+
   if (user?.role === 'ADMIN') {
     menuItems.push({ id: 'Admin Console', icon: <Settings size={18} />, label: 'Admin Console' });
   }
