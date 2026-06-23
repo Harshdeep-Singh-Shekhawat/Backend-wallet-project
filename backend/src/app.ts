@@ -11,6 +11,7 @@ import walletRoutes from './routes/wallet';
 import watchlistRoutes from './routes/watchlist';
 import alertsRoutes from './routes/alerts';
 import adminRoutes from './routes/admin';
+import systemRoutes from './routes/system';
 
 export const app = express();
 
@@ -23,8 +24,33 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api/auth', authRoutes);
 import { prisma } from './lib/prisma';
+
+// Maintenance Mode Middleware
+app.use(async (req, res, next) => {
+  // Allow admin, auth, and system routes to bypass maintenance
+  if (req.path.startsWith('/api/admin') || req.path.startsWith('/api/auth') || req.path.startsWith('/api/system')) {
+    return next();
+  }
+
+  try {
+    const maintenanceMode = await prisma.systemSetting.findUnique({ where: { key: 'MAINTENANCE_MODE' } });
+    if (maintenanceMode?.value === 'true') {
+      const maintenanceMessage = await prisma.systemSetting.findUnique({ where: { key: 'MAINTENANCE_MESSAGE' } });
+      return res.status(503).json({ 
+        error: 'Service Unavailable', 
+        message: maintenanceMessage?.value || 'The system is currently undergoing maintenance. Please try again later.',
+        maintenance: true 
+      });
+    }
+  } catch (err) {
+    // silently ignore DB errors in middleware
+  }
+
+  next();
+});
+
+app.use('/api/auth', authRoutes);
 app.get('/api/health', async (req, res) => {
   try {
     const c = await prisma.alert.count();
@@ -40,3 +66,4 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/alerts', alertsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/system', systemRoutes);

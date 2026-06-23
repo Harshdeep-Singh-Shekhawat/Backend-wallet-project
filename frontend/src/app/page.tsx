@@ -46,6 +46,13 @@ export default function App() {
   // Auth state
   const { data: authData, mutate: mutateAuth, isLoading: authLoading } = useSWR('/api/auth/me', apiFetcher);
   const isAuthenticated = authData?.authenticated;
+  const userRole = authData?.user?.role;
+
+  useEffect(() => {
+    if (userRole === 'ADMIN' && activeTab === 'Portfolio') {
+      setActiveTab('Admin Console');
+    }
+  }, [userRole, activeTab]);
 
   // Fetch user portfolio & transactions only if authenticated
   const { data: portfolioData, mutate: mutatePortfolio } = useSWR(isAuthenticated ? '/api/portfolio' : null, apiFetcher);
@@ -54,6 +61,10 @@ export default function App() {
   // Fetch watchlists & alerts
   const { data: watchlistData } = useSWR(isAuthenticated ? '/api/watchlist' : null, apiFetcher);
   const { data: alertsData, mutate: mutateAlerts } = useSWR(isAuthenticated ? '/api/alerts' : null, apiFetcher);
+
+  // Fetch public system data
+  const { data: systemData } = useSWR('/api/system/settings', apiFetcher);
+  const { data: announcementsData } = useSWR('/api/system/announcements', apiFetcher);
 
   // Extract unique symbols from portfolio + default symbols for widget
   const holdings: any[] = portfolioData?.holdings || [];
@@ -205,7 +216,37 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
+    const isAdminLogin = typeof window !== 'undefined' && window.location.search.includes('admin=1');
+    if (systemData?.settings?.MAINTENANCE_MODE === 'true' && !isAdminLogin) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)', padding: '24px' }}>
+          <Shield size={64} style={{ color: 'var(--color-accent)', marginBottom: '24px' }} />
+          <h1 style={{ fontSize: '32px', marginBottom: '16px', color: 'var(--color-text-primary)', textAlign: 'center' }}>System Maintenance</h1>
+          <p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', maxWidth: '600px', textAlign: 'center', lineHeight: 1.6 }}>
+            {systemData?.settings?.MAINTENANCE_MESSAGE || 'The system is currently undergoing maintenance. Please try again later.'}
+          </p>
+          <button onClick={() => window.location.href = '?admin=1'} style={{ marginTop: '64px', background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', opacity: 0.3, cursor: 'pointer' }}>
+            Admin Login
+          </button>
+        </div>
+      );
+    }
     return <AuthScreen onSuccess={() => mutateAuth()} />;
+  }
+
+  if (systemData?.settings?.MAINTENANCE_MODE === 'true' && userRole !== 'ADMIN') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)', padding: '24px' }}>
+        <Shield size={64} style={{ color: 'var(--color-accent)', marginBottom: '24px' }} />
+        <h1 style={{ fontSize: '32px', marginBottom: '16px', color: 'var(--color-text-primary)', textAlign: 'center' }}>System Maintenance</h1>
+        <p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', maxWidth: '600px', textAlign: 'center', lineHeight: 1.6 }}>
+          {systemData?.settings?.MAINTENANCE_MESSAGE || 'The system is currently undergoing maintenance. Please try again later.'}
+        </p>
+        <button onClick={() => apiFetch('/api/auth/logout', { method: 'POST' }).then(() => mutateAuth())} className={styles.btnSecondary} style={{ marginTop: '32px', padding: '12px 24px' }}>
+          Sign Out
+        </button>
+      </div>
+    );
   }
 
   const handleLogout = async () => {
@@ -214,13 +255,14 @@ export default function App() {
     mutateAuth();
   };
 
-  return (
-    <DashboardLayout 
-      activeTab={activeTab} 
-      setActiveTab={setActiveTab} 
-      user={authData?.user} 
-      onLogout={handleLogout}
-    >
+  return <DashboardLayout 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        user={authData?.user} 
+        systemConfig={systemData?.config}
+        announcements={announcementsData?.announcements}
+        onLogout={handleLogout}
+      >
       <div className={styles.container}>
         
         {activeTab === 'Portfolio' && (
@@ -459,6 +501,5 @@ export default function App() {
         )}
 
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>;
 }

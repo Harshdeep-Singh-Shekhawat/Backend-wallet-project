@@ -352,6 +352,25 @@
   cursor: not-allowed;
 }
 
+.btnDanger {
+  flex: 1;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btnDanger:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
 .btnCancel {
   padding: 0 24px;
   background-color: transparent;

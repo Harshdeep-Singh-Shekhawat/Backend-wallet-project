@@ -4,3 +4,6 @@ node_modules
 dev.db
 *.log
 .vercel
+
+# Local Netlify folder
+.netlify

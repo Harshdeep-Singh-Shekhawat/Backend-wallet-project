@@ -8,11 +8,13 @@ interface DashboardLayoutProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   user?: { name: string; email: string; role?: string };
+  systemConfig?: any;
+  announcements?: any[];
   onLogout?: () => void;
 }
 
-export default function DashboardLayout({ children, activeTab, setActiveTab, user, onLogout }: DashboardLayoutProps) {
-  const menuItems = [
+export default function DashboardLayout({ children, activeTab, setActiveTab, user, systemConfig, announcements, onLogout }: DashboardLayoutProps) {
+  let menuItems = [
     { id: 'Portfolio', icon: <LayoutDashboard size={18} />, label: 'Portfolio Overview' },
     { id: 'Watchlist', icon: <Eye size={18} />, label: 'Watchlist' },
     { id: 'Trade Crypto', icon: <ArrowRightLeft size={18} />, label: 'Trade Crypto' },
@@ -22,10 +24,11 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
     { id: 'Settings', icon: <Settings size={18} />, label: 'Settings' },
   ];
 
-  console.log("DashboardLayout user prop:", user);
-
   if (user?.role === 'ADMIN') {
-    menuItems.push({ id: 'Admin Console', icon: <Settings size={18} />, label: 'Admin Console' });
+    menuItems = [
+      { id: 'Admin Console', icon: <Settings size={18} />, label: 'Admin Console' },
+      { id: 'Settings', icon: <Settings size={18} />, label: 'Settings' },
+    ];
   }
 
   const [theme, setTheme] = useState('dark');
@@ -100,10 +103,24 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
             <h2 className={styles.headerTitle}>{activeTab}</h2>
             <div className={styles.headerSubtitle}>Track and manage your assets.</div>
           </div>
-          
-          <div className={styles.headerRight}>
-          </div>
         </header>
+
+        {systemConfig?.['MAINTENANCE_MODE'] === 'true' && (
+          <div style={{ background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c', color: '#e74c3c', padding: '12px 24px', borderRadius: '8px', margin: '0 32px 24px 32px', fontWeight: 600 }}>
+            🚨 System is currently in MAINTENANCE MODE. {systemConfig['MAINTENANCE_MESSAGE']}
+          </div>
+        )}
+
+        {(announcements?.length || 0) > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '0 32px 24px 32px' }}>
+            {announcements?.map((ann: any) => (
+              <div key={ann.id} style={{ background: 'rgba(52, 152, 219, 0.1)', border: '1px solid #3498db', color: 'var(--color-text-primary)', padding: '16px 24px', borderRadius: '8px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontWeight: 600, color: '#3498db', marginBottom: '4px' }}>📢 {ann.title}</div>
+                <div style={{ fontSize: '0.9rem' }}>{ann.content}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Page Content */}
         <div className={styles.content}>

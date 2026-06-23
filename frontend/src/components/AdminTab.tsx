@@ -1,100 +1,58 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Database, Settings, Megaphone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch, apiFetcher } from '@/lib/api';
 import styles from '../app/page.module.css';
 
+import AdminSettings from './AdminSettings';
+import AdminAnnouncements from './AdminAnnouncements';
+import AdminUsers from './AdminUsers';
+import AdminAssets from './AdminAssets';
 export default function AdminTab() {
-  const { data, mutate, isLoading } = useSWR('/api/admin/assets', apiFetcher);
-  
-  const [symbol, setSymbol] = useState('');
-  const [supply, setSupply] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState('Settings');
 
-  const handleUpdateSupply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!symbol) return toast.error('Symbol is required');
-
-    setIsUpdating(true);
-    try {
-      const res = await apiFetch('/api/admin/assets/supply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: symbol.toUpperCase(), availableSupply: supply }),
-      });
-      const resData = await res.json();
-      if (!res.ok) throw new Error(resData.error || 'Failed to update supply');
-
-      toast.success(`Successfully updated ${symbol.toUpperCase()} supply`);
-      setSymbol('');
-      setSupply('');
-      mutate();
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  if (isLoading) return <div className={styles.loading}><Loader2 className={styles.loader} /></div>;
+  const tabs = [
+    { id: 'Settings', label: 'System Settings', icon: <Settings size={16} /> },
+    { id: 'Announcements', label: 'Announcements', icon: <Megaphone size={16} /> },
+    { id: 'Users', label: 'User & Wallet Mgmt', icon: <Database size={16} /> },
+    { id: 'Assets', label: 'Asset Management', icon: <Database size={16} /> },
+  ];
 
   return (
-    <div className={styles.sectionSpace}>
-      <div className={`glass-panel ${styles.card}`}>
-        <h3 className={styles.cardTitleBig}>Admin Console</h3>
-        <p className={styles.cardDesc}>Manage global market configurations and asset liquidity.</p>
-        
-        <form onSubmit={handleUpdateSupply} className={styles.formBox} style={{ maxWidth: '100%', marginBottom: '32px', display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
-          <div className={styles.inputGroup} style={{ marginBottom: 0, flex: 1 }}>
-            <label className={styles.inputLabel}>Asset Symbol</label>
-            <input 
-              type="text" 
-              value={symbol} 
-              onChange={(e) => setSymbol(e.target.value.toUpperCase())} 
-              className={styles.input} 
-              placeholder="e.g. BTC, AAPL"
-              required
-            />
-          </div>
-          <div className={styles.inputGroup} style={{ marginBottom: 0, flex: 1 }}>
-            <label className={styles.inputLabel}>Available Market Supply</label>
-            <input 
-              type="number" 
-              step="any"
-              value={supply} 
-              onChange={(e) => setSupply(e.target.value)} 
-              className={styles.input} 
-              placeholder="Leave empty for infinite"
-            />
-          </div>
-          <button type="submit" className={styles.btnSubmit} disabled={isUpdating} style={{ flex: 'none', padding: '14px 24px' }}>
-            {isUpdating ? <Loader2 className={styles.loader} size={18} style={{ marginRight: '8px' }} /> : <Save size={18} style={{ marginRight: '8px' }} />}
-            Set Supply
+    <div>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', paddingBottom: '16px' }}>
+        {tabs.map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveSubTab(tab.id)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              background: activeSubTab === tab.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.05)', 
+              color: activeSubTab === tab.id ? 'var(--color-bg)' : 'var(--color-text-primary)',
+              border: '1px solid',
+              borderColor: activeSubTab === tab.id ? 'var(--color-accent)' : 'var(--color-border)',
+              padding: '12px 24px',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '1rem',
+              transition: 'all 0.2s',
+              boxShadow: activeSubTab === tab.id ? '0 4px 12px rgba(255,255,255,0.1)' : 'none'
+            }}
+          >
+            {tab.icon}
+            {tab.label}
           </button>
-        </form>
-
-        <h4 className={styles.sectionTitle} style={{ marginBottom: '16px' }}>Current Market Assets</h4>
-        <div className={styles.marketList}>
-          {data?.assets?.length === 0 && <div style={{ color: 'var(--color-text-secondary)' }}>No assets in the database yet.</div>}
-          {data?.assets?.map((asset: any) => (
-            <div key={asset.id} className={styles.marketRow}>
-              <div className={styles.marketIconArea}>
-                <div className={styles.marketIcon}>{asset.symbol[0]}</div>
-                <div>
-                  <div className={styles.marketSymbol}>{asset.symbol}</div>
-                  <div className={styles.marketType}>{asset.type}</div>
-                </div>
-              </div>
-              <div className={styles.marketPriceArea}>
-                <div className={styles.marketPrice} style={{ color: asset.availableSupply === null ? 'var(--color-text-secondary)' : 'var(--color-text-primary)' }}>
-                  {asset.availableSupply === null ? 'Infinite (∞)' : `${asset.availableSupply.toLocaleString(undefined, { maximumFractionDigits: 8 })} Available`}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
+
+      {activeSubTab === 'Settings' && <AdminSettings />}
+      {activeSubTab === 'Announcements' && <AdminAnnouncements />}
+      {activeSubTab === 'Users' && <AdminUsers />}
+      {activeSubTab === 'Assets' && <AdminAssets />}
     </div>
   );
 }

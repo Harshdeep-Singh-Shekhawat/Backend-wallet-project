@@ -37,7 +37,14 @@ router.post('/buy', requireAuth, async (req: AuthRequest, res) => {
       const user = await tx.user.findUnique({ where: { id: userId } });
       if (!user) throw new Error('User not found');
 
-      // 2. Check balance
+      if (user.status !== 'ACTIVE') throw new Error(`Your account is ${user.status.toLowerCase()}`);
+      if (user.walletStatus !== 'ACTIVE') throw new Error('Your wallet is frozen');
+
+      // 2. Check asset status
+      if (asset!.status === 'DELISTED') throw new Error('This asset is delisted and cannot be traded');
+      if (asset!.status === 'SUSPENDED') throw new Error('Trading is suspended for this asset (buying disabled)');
+
+      // 3. Check balance
       if (user.fiatBalance < totalCost) {
         throw new Error('Insufficient fiat balance');
       }
@@ -123,9 +130,19 @@ router.post('/sell', requireAuth, async (req: AuthRequest, res) => {
     const totalReturn = quantity * currentPrice;
 
     const result = await prisma.$transaction(async (tx) => {
+      // 0. Get User and check status
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) throw new Error('User not found');
+      if (user.status !== 'ACTIVE') throw new Error(`Your account is ${user.status.toLowerCase()}`);
+      if (user.walletStatus !== 'ACTIVE') throw new Error('Your wallet is frozen');
+
       // 1. Get Asset
       const asset = await tx.asset.findUnique({ where: { symbol } });
       if (!asset) throw new Error('Asset not found in portfolio');
+
+      if (asset.status === 'DELISTED') {
+        throw new Error('This asset is delisted and cannot be traded');
+      }
 
       // 2. Check portfolio
       const portfolio = await tx.portfolio.findUnique({

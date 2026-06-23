@@ -32,8 +32,9 @@ router.post('/signup', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const role = email === 'admin@neotrade.com' ? 'ADMIN' : 'USER';
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, fiatBalance: 0.0 },
+      data: { name, email, password: hashedPassword, fiatBalance: 0.0, role },
     });
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
@@ -56,6 +57,10 @@ router.post('/login', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.password) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.status !== 'ACTIVE') {
+      return res.status(403).json({ error: `Your account is ${user.status.toLowerCase()}.` });
     }
 
     const valid = await bcrypt.compare(password, user.password);
@@ -88,6 +93,11 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return res.status(404).json({ error: 'User not found', authenticated: false });
+    }
+
+    if (user.status !== 'ACTIVE') {
+      res.cookie('token', '', { ...authCookieOptions(), maxAge: -1 });
+      return res.status(403).json({ error: `Your account is ${user.status.toLowerCase()}.`, authenticated: false });
     }
     return res.json({ authenticated: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
@@ -138,13 +148,19 @@ router.get('/google/callback', async (req, res) => {
 
     let user = await prisma.user.findUnique({ where: { email: userData.email } });
     if (!user) {
+      const role = userData.email === 'admin@neotrade.com' ? 'ADMIN' : 'USER';
       user = await prisma.user.create({
         data: {
           email: userData.email,
           name: userData.name,
           fiatBalance: 10000,
+          role,
         },
       });
+    }
+
+    if (user.status !== 'ACTIVE') {
+      return res.redirect(`${FRONTEND_URL}?error=Account${user.status}`);
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
