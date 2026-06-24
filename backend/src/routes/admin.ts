@@ -295,4 +295,25 @@ router.post('/assets/upsert', async (req, res) => {
   }
 });
 
+router.post('/settings', async (req, res) => {
+  try {
+    const { settings } = req.body;
+    if (!Array.isArray(settings)) {
+      return res.status(400).json({ error: 'Settings must be an array' });
+    }
+
+    for (const { key, value } of settings) {
+      await prisma.systemSetting.upsert({
+        where: { key: String(key) },
+        update: { value: String(value) },
+        create: { key: String(key), value: String(value) }
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

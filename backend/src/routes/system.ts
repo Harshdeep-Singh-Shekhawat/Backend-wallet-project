@@ -12,4 +12,14 @@ router.get('/token', async (req, res) => {
   res.json({ token });
 });
 
+router.get('/settings', async (req, res) => {
+  try {
+    const settings = await prisma.systemSetting.findMany();
+    const config = settings.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+    res.json({ config });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
