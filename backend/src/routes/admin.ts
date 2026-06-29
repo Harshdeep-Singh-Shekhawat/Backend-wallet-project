@@ -233,8 +233,23 @@ router.post('/users/:id/wallet/balance', async (req, res) => {
 });
 
 // ASSET MANAGEMENT
+
+router.get('/users/:id/transactions', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const transactions = await prisma.transaction.findMany({
+      where: { userId: id },
+      orderBy: { timestamp: 'desc' },
+      include: { asset: true }
+    });
+    return res.json({ transactions });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
 const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
+const DEFAULT_RWA = ['GOLD', 'SLVR', 'RELEST'];
 
 router.get('/assets', async (req, res) => {
   try {
@@ -247,6 +262,9 @@ router.get('/assets', async (req, res) => {
     }
     for (const sym of DEFAULT_STOCKS) {
       if (!existingSymbols.has(sym)) toCreate.push({ symbol: sym, name: sym, type: 'STOCK' });
+    }
+    for (const sym of DEFAULT_RWA) {
+      if (!existingSymbols.has(sym)) toCreate.push({ symbol: sym, name: sym, type: 'RWA' });
     }
 
     if (toCreate.length > 0) {

@@ -14,6 +14,8 @@ export default function AdminUsers() {
   const [fundAmount, setFundAmount] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const { data: txData, isLoading: txLoading } = useSWR(selectedUser ? `/api/admin/users/${selectedUser.id}/transactions` : null, apiFetcher);
+
   const handleUpdateStatus = async (userId: string, status: string) => {
     try {
       const res = await apiFetch(`/api/admin/users/${userId}/status`, {
@@ -150,6 +152,47 @@ export default function AdminUsers() {
               </div>
             </div>
           </div>
+
+          {/* Transactions Section */}
+          <div style={{ marginTop: '40px' }}>
+            <h4 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <DollarSign size={18} /> Transaction History
+            </h4>
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '12px', border: '1px solid var(--color-border)', overflowX: 'auto' }}>
+              {txLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} /></div>
+              ) : txData?.transactions?.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>No transactions found for this user.</div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
+                      <th style={{ padding: '12px', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '12px', fontWeight: 600 }}>Asset</th>
+                      <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Amount</th>
+                      <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Price</th>
+                      <th style={{ padding: '12px', fontWeight: 600, textAlign: 'right' }}>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {txData?.transactions?.map((tx: any) => (
+                      <tr key={tx.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, background: tx.type === 'BUY' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(231, 76, 60, 0.2)', color: tx.type === 'BUY' ? '#2ecc71' : '#e74c3c' }}>
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px', fontWeight: 500 }}>{tx.asset?.symbol || '-'}</td>
+                        <td style={{ padding: '12px', textAlign: 'right' }}>{tx.quantity}</td>
+                        <td style={{ padding: '12px', textAlign: 'right' }}>${tx.priceAtTrade.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: 'var(--color-text-secondary)' }}>{new Date(tx.timestamp).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -185,6 +228,7 @@ export default function AdminUsers() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>User</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Registered</th>
                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>Balance</th>
                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
                     <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'right' }}>Actions</th>
@@ -196,6 +240,9 @@ export default function AdminUsers() {
                       <td style={{ padding: '16px' }}>
                         <div style={{ fontWeight: 600 }}>{user.name}</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{user.email}</div>
+                      </td>
+                      <td style={{ padding: '16px', color: 'var(--color-text-secondary)' }}>
+                        {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td style={{ padding: '16px', fontWeight: 500 }}>
                         ${user.fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

@@ -7,9 +7,11 @@ import styles from '../app/page.module.css';
 interface AlertsTabProps {
   prices: Record<string, number>;
   onAddSymbol: (symbol: string) => void;
+  exchangeRate: number;
+  currencySymbol: string;
 }
 
-export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
+export default function AlertsTab({ prices, onAddSymbol, exchangeRate, currencySymbol }: AlertsTabProps) {
   const [newSymbol, setNewSymbol] = useState('');
   const [targetPrice, setTargetPrice] = useState('');
   const [adding, setAdding] = useState(false);
@@ -81,7 +83,7 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
     try {
       await apiFetch(`/api/alerts?alertId=${alertId}`, { method: 'DELETE' });
       mutate();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     }
   };
@@ -105,7 +107,7 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
         setEditingId(null);
         mutate();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
     } finally {
       setSavingId(null);
@@ -180,6 +182,7 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
               const sym = a.symbol;
               const price = prices[sym];
               const isTriggered = a.status === 'TRIGGERED';
+              const target = a.targetPrice;
 
               if (editingId === a.id) {
                 return (
@@ -233,7 +236,7 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
                     <div>
                       <div className={styles.marketSymbol}>{sym}</div>
                       <div className={styles.marketType}>
-                        {a.direction} ${a.targetPrice.toLocaleString()}
+                        {a.direction}
                         {a.autoTradeType && (
                           <span style={{ marginLeft: '10px', color: '#3b82f6', fontWeight: 'bold' }}>
                             | AUTO {a.autoTradeType} {a.autoTradeQuantity}
@@ -242,13 +245,13 @@ export default function AlertsTab({ prices, onAddSymbol }: AlertsTabProps) {
                       </div>
                     </div>
                   </div>
-                  <div className={styles.marketPriceArea} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    {!isTriggered && price && (
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '12px', color: '#888' }}>Current</div>
-                        <div className={styles.marketPrice}>${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div className={styles.marketPriceArea} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div>
+                      <div className={styles.marketPrice}>Target: {currencySymbol}{(target * exchangeRate)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                      <div className={styles.marketTrend} style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                        Live: {currencySymbol}{(price * exchangeRate)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}
                       </div>
-                    )}
+                    </div>
                     {isTriggered && (
                       <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: 'bold' }}>
                         TRIGGERED

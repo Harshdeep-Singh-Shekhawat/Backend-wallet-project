@@ -7,9 +7,11 @@ import styles from '../app/page.module.css';
 interface WatchlistTabProps {
   prices: Record<string, number>;
   onAddSymbol: (symbol: string) => void;
+  exchangeRate: number;
+  currencySymbol: string;
 }
 
-export default function WatchlistTab({ prices, onAddSymbol }: WatchlistTabProps) {
+export default function WatchlistTab({ prices, onAddSymbol, exchangeRate, currencySymbol }: WatchlistTabProps) {
   const [newSymbol, setNewSymbol] = useState('');
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
@@ -34,6 +36,27 @@ export default function WatchlistTab({ prices, onAddSymbol }: WatchlistTabProps)
       
       setNewSymbol('');
       onAddSymbol(result.watchlist.symbol); // Tell parent to track this symbol via WS
+      mutate();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const addSpecific = async (symbol: string) => {
+    setAdding(true);
+    setError('');
+    try {
+      const res = await apiFetch('/api/watchlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: symbol.toUpperCase() }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      
+      onAddSymbol(result.watchlist.symbol);
       mutate();
     } catch (err: any) {
       setError(err.message);
@@ -96,7 +119,7 @@ export default function WatchlistTab({ prices, onAddSymbol }: WatchlistTabProps)
                   </div>
                   <div className={styles.marketPriceArea} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div>
-                      <div className={styles.marketPrice}>${price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}</div>
+                      <div className={styles.marketPrice}>{currencySymbol}{(price * exchangeRate)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}</div>
                       <div className={`${styles.marketTrend} ${isUp ? styles.trendUp : styles.trendDown}`}>
                         {isUp ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>} LIVE
                       </div>
@@ -110,6 +133,28 @@ export default function WatchlistTab({ prices, onAddSymbol }: WatchlistTabProps)
             })}
           </div>
         )}
+      </div>
+
+      <div className={`glass-panel ${styles.card}`} style={{ marginTop: '24px' }}>
+        <h3 className={styles.cardTitleBig}>Recommended for You</h3>
+        <p className={styles.cardDesc}>Popular assets you might want to track.</p>
+        <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }}>
+          {['BTC', 'ETH', 'AAPL', 'TSLA', 'GOLD', 'RELEST'].filter(sym => !watchlists.some((w: any) => w.symbol === sym)).map(sym => (
+            <div key={sym} style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', minWidth: '160px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div className={styles.marketIcon} style={{ width: '32px', height: '32px', fontSize: '14px' }}>{sym[0]}</div>
+                <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{sym}</div>
+              </div>
+              <button 
+                onClick={() => addSpecific(sym)}
+                disabled={adding}
+                style={{ width: '100%', padding: '8px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', cursor: 'pointer' }}
+              >
+                + Watch
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

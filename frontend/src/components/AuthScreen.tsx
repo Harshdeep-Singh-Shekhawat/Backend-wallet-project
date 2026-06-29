@@ -67,10 +67,28 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
     }
   };
 
-  const handleDemoLogin = async () => {
+  const handleDemoLogin = async (isAdmin = false) => {
     setError('');
     setLoading(true);
     
+    if (isAdmin) {
+      try {
+        const res = await apiFetch('/api/auth/demo-admin', {
+          method: 'POST',
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to login as admin');
+        
+        if (data.token) setAuthToken(data.token);
+        onSuccess();
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     const demoEmail = 'demo@example.com';
     const demoPassword = 'password123';
     
@@ -182,13 +200,23 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
         </button>
 
         <button 
-          onClick={handleDemoLogin} 
+          onClick={() => handleDemoLogin(false)} 
           className={styles.btnGoogle}
           style={{ marginTop: '12px' }}
           type="button"
           disabled={loading}
         >
           {loading ? <Loader2 size={16} className={styles.loader} /> : 'Use Demo Account'}
+        </button>
+
+        <button 
+          onClick={() => handleDemoLogin(true)} 
+          className={styles.btnGoogle}
+          style={{ marginTop: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)' }}
+          type="button"
+          disabled={loading}
+        >
+          {loading ? <Loader2 size={16} className={styles.loader} /> : 'Login as Demo Admin'}
         </button>
 
         <div className={styles.toggleArea}>

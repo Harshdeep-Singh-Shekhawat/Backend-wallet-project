@@ -8,9 +8,10 @@ interface PortfolioOverviewProps {
   totalCost: number;
   totalPnL: number;
   pnlPercentage: number;
+  currencySymbol: string;
 }
 
-export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, totalPnL, pnlPercentage }: PortfolioOverviewProps) {
+export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, totalPnL, pnlPercentage, currencySymbol }: PortfolioOverviewProps) {
   const isProfit = totalPnL >= 0;
   const totalBalance = totalValue;
 
@@ -23,7 +24,7 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, 
         </div>
         <div className={styles.cardTitle}>Invested Amount</div>
         <div className={styles.cardValue}>
-          ${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {currencySymbol}{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
       </div>
 
@@ -34,7 +35,7 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, 
         </div>
         <div className={styles.cardTitle}>Portfolio Value</div>
         <div className={styles.cardValue}>
-          ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {currencySymbol}{totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
       </div>
 
@@ -51,7 +52,7 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, 
 
         <div className={styles.cardTitle}>Total Returns</div>
         <div className={styles.cardValue}>
-          {isProfit ? '+' : '-'}${Math.abs(totalPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {isProfit ? '+' : '-'}{currencySymbol}{Math.abs(totalPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         <div className={isProfit ? styles.pnlText : styles.pnlTextNegative}>
           Past 24 Hours
@@ -65,7 +66,7 @@ export default function PortfolioOverview({ totalValue, fiatBalance, totalCost, 
         </div>
         <div className={styles.cardTitle}>Available Cash</div>
         <div className={styles.cardValue}>
-          ${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {currencySymbol}{fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
       </div>
     </div>

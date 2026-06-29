@@ -105,6 +105,30 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+router.post('/demo-admin', async (req, res) => {
+  try {
+    let user = await prisma.user.findUnique({ where: { email: 'admin@neotrade.com' } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: 'admin@neotrade.com',
+          name: 'Demo Admin',
+          fiatBalance: 0.0,
+          role: 'ADMIN',
+          password: await bcrypt.hash('admin123', 10)
+        }
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('token', token, authCookieOptions());
+
+    return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Google OAuth implementation
 router.get('/google', (req, res) => {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;

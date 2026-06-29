@@ -13,9 +13,10 @@ export interface Holding {
 interface HoldingsTableProps {
   holdings: Holding[];
   onTradeClick?: () => void;
+  currencySymbol: string;
 }
 
-export default function HoldingsTable({ holdings, onTradeClick }: HoldingsTableProps) {
+export default function HoldingsTable({ holdings, onTradeClick, currencySymbol }: HoldingsTableProps) {
   return (
     <div className={`glass-panel ${styles.container}`}>
       <div className={styles.headerArea}>
@@ -82,12 +83,12 @@ export default function HoldingsTable({ holdings, onTradeClick }: HoldingsTableP
                     <div className={styles.valuePrimary}>{holding.quantity.toLocaleString(undefined, { maximumFractionDigits: 6 })}</div>
                   </td>
                   <td className={`${styles.td} ${styles.tdRight}`}>
-                    <div className={styles.valuePrimary}>${holding.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className={styles.valuePrimary}>{currencySymbol}{holding.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                   </td>
                   <td className={`${styles.td} ${styles.tdRight}`}>
-                    <div className={styles.valuePrimary}>${currentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className={styles.valuePrimary}>{currencySymbol}{currentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     <div className={isProfit ? styles.pnlPositive : styles.pnlNegative}>
-                      {isProfit ? '+' : '-'}${Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {isProfit ? '+' : '-'}{currencySymbol}{Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </td>
                 </tr>

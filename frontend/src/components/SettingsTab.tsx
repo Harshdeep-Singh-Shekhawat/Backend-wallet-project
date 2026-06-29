@@ -7,9 +7,11 @@ import styles from '../app/page.module.css';
 interface SettingsTabProps {
   user?: { id: string; name: string; email: string };
   onUpdateUser: () => void;
+  currency: string;
+  onCurrencyChange: (c: string) => void;
 }
 
-export default function SettingsTab({ user, onUpdateUser }: SettingsTabProps) {
+export default function SettingsTab({ user, onUpdateUser, currency, onCurrencyChange }: SettingsTabProps) {
   const [activeCategory, setActiveCategory] = useState('General');
   
   // General State
@@ -229,6 +231,21 @@ export default function SettingsTab({ user, onUpdateUser }: SettingsTabProps) {
                         Light Mode
                       </button>
                     </div>
+                  </div>
+
+                  <div className={styles.inputGroup} style={{ marginTop: '24px' }}>
+                    <label className={styles.inputLabel}>Display Currency</label>
+                    <select 
+                      className={styles.input}
+                      value={currency}
+                      onChange={(e) => onCurrencyChange(e.target.value)}
+                      style={{ marginTop: '8px', cursor: 'pointer' }}
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="JPY">JPY (¥)</option>
+                    </select>
                   </div>
                 </div>
               </div>

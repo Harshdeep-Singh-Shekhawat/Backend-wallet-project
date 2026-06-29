@@ -12,9 +12,12 @@ interface TradeWidgetProps {
   symbol: string;
   setSymbol: (symbol: string) => void;
   onTradeSuccess: () => void;
+  currencySymbol: string;
+  exchangeRate: number;
+  userRole?: string;
 }
 
-export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, onTradeSuccess }: TradeWidgetProps) {
+export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, onTradeSuccess, currencySymbol, exchangeRate, userRole }: TradeWidgetProps) {
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL'>('BUY');
   const [inputType, setInputType] = useState<'QUANTITY' | 'AMOUNT'>('QUANTITY');
   const [inputValue, setInputValue] = useState('');
@@ -26,7 +29,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
   const currentAsset = assetsData?.assets?.find((a: any) => a.symbol === symbol);
   const marketSupply = currentAsset?.availableSupply;
 
-  const currentPrice = prices[symbol] || 0;
+  const currentPrice = (prices[symbol] || 0) * exchangeRate;
   const numInput = parseFloat(inputValue) || 0;
   
   let calculatedQuantity = 0;
@@ -104,7 +107,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
       <div className={styles.header}>
         <h3 className={styles.title}>Trade {symbol}</h3>
         <div className={styles.availableBadge}>
-          Available: <span className={styles.availableAmount}>${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          Available: <span className={styles.availableAmount}>{currencySymbol}{fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
@@ -128,12 +131,12 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
             <label className={styles.label}>
-              {inputType === 'QUANTITY' ? 'Quantity' : 'Amount (USD)'}
+              {inputType === 'QUANTITY' ? 'Quantity' : `Amount (${currencySymbol})`}
             </label>
             <span className={styles.priceBadge}>
-              {currentPrice ? `Live: $${currentPrice.toLocaleString()}` : 'Loading...'}
+              {currentPrice ? `Live: ${currencySymbol}${currentPrice.toLocaleString()}` : 'Loading...'}
             </span>
-            {marketSupply !== null && marketSupply !== undefined && (
+            {userRole === 'ADMIN' && marketSupply !== null && marketSupply !== undefined && (
               <span className={styles.priceBadge} style={{ marginLeft: '8px', background: 'rgba(234, 179, 8, 0.1)', color: '#eab308' }}>
                 Supply: {marketSupply.toLocaleString(undefined, { maximumFractionDigits: 8 })}
               </span>
@@ -153,7 +156,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
               className={`${styles.segmentedBtn} ${inputType === 'AMOUNT' ? styles.segmentedBtnActive : ''}`}
               onClick={() => setInputType('AMOUNT')}
             >
-              Amount (USD)
+              Amount ({currencySymbol})
             </button>
           </div>
           
@@ -185,7 +188,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
                 {activeTab === 'BUY' ? 'Total Cost' : 'Total Return'}
               </span>
               <span className={styles.summaryValueBig}>
-                ${calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currencySymbol}{calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           )}
@@ -193,7 +196,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
           <div className={styles.summaryRowDivider}>
             <span className={styles.summaryLabel}>Balance After Trade</span>
             <span className={balanceAfterTrade < 0 ? styles.summaryValueNegative : styles.summaryValueSmall}>
-              ${balanceAfterTrade.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {currencySymbol}{balanceAfterTrade.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>

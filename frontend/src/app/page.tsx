@@ -27,6 +27,13 @@ import styles from './page.module.css';
 const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
 const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$', EUR: '€', GBP: '£', JPY: '¥'
+};
+const EXCHANGE_RATES: Record<string, number> = {
+  USD: 1, EUR: 0.92, GBP: 0.79, JPY: 150
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('Portfolio');
   const [tradeSymbolCrypto, setTradeSymbolCrypto] = useState('BTC');
@@ -42,6 +49,20 @@ export default function App() {
   const [walletAmount, setWalletAmount] = useState('');
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletError, setWalletError] = useState('');
+
+  // Currency State
+  const [currency, setCurrency] = useState('USD');
+  useEffect(() => {
+    const saved = localStorage.getItem('currency');
+    if (saved) setCurrency(saved);
+  }, []);
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || '$';
+  const exchangeRate = EXCHANGE_RATES[currency] || 1;
+
+  const handleCurrencyChange = (c: string) => {
+    setCurrency(c);
+    localStorage.setItem('currency', c);
+  };
 
   // Auth state
   const { data: authData, mutate: mutateAuth, isLoading: authLoading } = useSWR('/api/auth/me', apiFetcher);
@@ -268,17 +289,22 @@ export default function App() {
         {activeTab === 'Portfolio' && (
           <div className={styles.sectionSpace}>
             <PortfolioOverview
-              totalValue={totalHoldingsValue}
-              fiatBalance={fiatBalance}
+              totalValue={totalHoldingsValue * exchangeRate}
+              fiatBalance={fiatBalance * exchangeRate}
 
-              totalCost={totalCost}
-              totalPnL={totalPnL}
+              totalCost={totalCost * exchangeRate}
+              totalPnL={totalPnL * exchangeRate}
               pnlPercentage={pnlPercentage}
+              currencySymbol={currencySymbol}
             />
             
             <div className={styles.grid}>
               <div className={styles.colSpan2}>
-                <HoldingsTable holdings={enrichedHoldings} onTradeClick={() => setActiveTab('Trade Crypto')} />
+                <HoldingsTable 
+                  holdings={enrichedHoldings.map(h => ({ ...h, currentPrice: h.currentPrice * exchangeRate, averagePurchasePrice: h.averagePurchasePrice * exchangeRate }))} 
+                  onTradeClick={() => setActiveTab('Trade Crypto')} 
+                  currencySymbol={currencySymbol}
+                />
               </div>
               <div>
                 <div className={`glass-panel ${styles.card}`} style={{height: '100%'}}>
@@ -292,11 +318,11 @@ export default function App() {
         )}
 
         {activeTab === 'Watchlist' && (
-          <WatchlistTab prices={prices} onAddSymbol={() => {}} />
+          <WatchlistTab prices={prices} onAddSymbol={() => {}} exchangeRate={exchangeRate} currencySymbol={currencySymbol} />
         )}
 
         {activeTab === 'Alerts' && (
-          <AlertsTab prices={prices} onAddSymbol={() => {}} />
+          <AlertsTab prices={prices} onAddSymbol={() => {}} exchangeRate={exchangeRate} currencySymbol={currencySymbol} />
         )}
 
         {(activeTab === 'Trade Crypto' || activeTab === 'Trade Stocks') && (
@@ -334,7 +360,7 @@ export default function App() {
                             </div>
                           </div>
                           <div className={styles.marketPriceArea}>
-                            <div className={styles.marketPrice}>${prices[sym]?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}</div>
+                            <div className={styles.marketPrice}>{currencySymbol}{(prices[sym] * exchangeRate)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '---'}</div>
                             <div className={`${styles.marketTrend} ${isUp ? styles.trendUp : styles.trendDown}`}>
                               {isUp ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>} LIVE
                             </div>
@@ -358,11 +384,14 @@ export default function App() {
             <div>
               <div className={styles.stickyWidget}>
                 <TradeWidget 
-                  fiatBalance={fiatBalance}
+                  fiatBalance={fiatBalance * exchangeRate}
                   prices={prices}
                   symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock}
                   setSymbol={activeTab === 'Trade Crypto' ? setTradeSymbolCrypto : setTradeSymbolStock}
                   onTradeSuccess={() => { mutatePortfolio(); mutateTransactions(); }}
+                  currencySymbol={currencySymbol}
+                  exchangeRate={exchangeRate}
+                  userRole={userRole}
                 />
               </div>
             </div>
@@ -380,7 +409,7 @@ export default function App() {
                </div>
                <p className={styles.walletDesc}>This is your fiat balance used to buy assets. Add funds to start trading.</p>
                <div className={styles.walletBalance}>
-                 ${fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                 {currencySymbol}{(fiatBalance * exchangeRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                </div>
                
                {!walletAction ? (
@@ -493,8 +522,12 @@ export default function App() {
         )}
 
         {activeTab === 'Settings' && (
-          <SettingsTab user={authData?.user} onUpdateUser={() => mutateAuth()} />
-        )}
+          <SettingsTab 
+            user={authData?.user} 
+            onUpdateUser={() => mutateAuth()} 
+            currency={currency} 
+            onCurrencyChange={handleCurrencyChange} 
+          />)}
 
         {activeTab === 'Admin Console' && (
           <AdminTab />
