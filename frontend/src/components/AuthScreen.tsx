@@ -72,12 +72,31 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
     setLoading(true);
     
     if (isAdmin) {
+      const adminEmail = 'admin@neotrade.com';
+      const adminPassword = 'admin123';
       try {
-        const res = await apiFetch('/api/auth/demo-admin', {
+        let res = await apiFetch('/api/auth/login', {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: adminEmail, password: adminPassword }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to login as admin');
+        
+        let data;
+        try {
+          data = await res.json();
+        } catch (e) {
+          throw new Error('Backend is not responding correctly. It might be out of date.');
+        }
+
+        if (!res.ok) {
+          res = await apiFetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Demo Admin', email: adminEmail, password: adminPassword }),
+          });
+          data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to login as admin');
+        }
         
         if (data.token) setAuthToken(data.token);
         onSuccess();
