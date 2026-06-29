@@ -58,7 +58,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
 
     try {
       const endpoint = `/api/trade/${activeTab.toLowerCase()}`;
-      const payload = { symbol, quantity: calculatedQuantity, currentPrice };
+      const payload = { symbol, quantity: calculatedQuantity, currentPrice: currentPrice / exchangeRate };
 
       const res = await apiFetch(endpoint, {
         method: 'POST',
