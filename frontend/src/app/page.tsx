@@ -28,10 +28,10 @@ const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
 const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: '$', EUR: '€', GBP: '£', JPY: '¥'
+  USD: '$', EUR: '€', GBP: '£', JPY: '¥', INR: '₹'
 };
 const EXCHANGE_RATES: Record<string, number> = {
-  USD: 1, EUR: 0.92, GBP: 0.79, JPY: 150
+  USD: 1, EUR: 0.92, GBP: 0.79, JPY: 150, INR: 83.5
 };
 
 export default function App() {
