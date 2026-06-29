@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, User, LogOut, Eye, BellRing, Settings, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, ArrowRightLeft, TrendingUp, Wallet, User, LogOut, Eye, BellRing, Settings, Sun, Moon, Building } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import styles from './DashboardLayout.module.css';
 
@@ -19,6 +19,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
     { id: 'Watchlist', icon: <Eye size={18} />, label: 'Watchlist' },
     { id: 'Trade Crypto', icon: <ArrowRightLeft size={18} />, label: 'Trade Crypto' },
     { id: 'Trade Stocks', icon: <TrendingUp size={18} />, label: 'Trade Stocks' },
+    { id: 'Trade RWA', icon: <Building size={18} />, label: 'Trade RWA' },
     { id: 'Wallets', icon: <Wallet size={18} />, label: 'My Wallets' },
     { id: 'Alerts', icon: <BellRing size={18} />, label: 'Price Alerts' },
     { id: 'Settings', icon: <Settings size={18} />, label: 'Settings' },

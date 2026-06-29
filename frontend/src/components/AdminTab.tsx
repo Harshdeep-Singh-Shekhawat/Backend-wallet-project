@@ -9,6 +9,7 @@ import AdminSettings from './AdminSettings';
 import AdminAnnouncements from './AdminAnnouncements';
 import AdminUsers from './AdminUsers';
 import AdminAssets from './AdminAssets';
+import AdminTransactions from './AdminTransactions';
 export default function AdminTab() {
   const [activeSubTab, setActiveSubTab] = useState('Settings');
 
@@ -17,6 +18,7 @@ export default function AdminTab() {
     { id: 'Announcements', label: 'Announcements', icon: <Megaphone size={16} /> },
     { id: 'Users', label: 'User & Wallet Mgmt', icon: <Database size={16} /> },
     { id: 'Assets', label: 'Asset Management', icon: <Database size={16} /> },
+    { id: 'Transactions', label: 'All Transactions', icon: <Database size={16} /> },
   ];
 
   return (
@@ -53,6 +55,7 @@ export default function AdminTab() {
       {activeSubTab === 'Announcements' && <AdminAnnouncements />}
       {activeSubTab === 'Users' && <AdminUsers />}
       {activeSubTab === 'Assets' && <AdminAssets />}
+      {activeSubTab === 'Transactions' && <AdminTransactions />}
     </div>
   );
 }

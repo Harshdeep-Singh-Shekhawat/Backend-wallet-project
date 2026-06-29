@@ -26,6 +26,7 @@ import styles from './page.module.css';
 
 const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
 const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
+const DEFAULT_RWA = ['GOLD', 'SLVR', 'RELEST'];
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', EUR: '€', GBP: '£', JPY: '¥', INR: '₹'
@@ -38,7 +39,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('Portfolio');
   const [tradeSymbolCrypto, setTradeSymbolCrypto] = useState('BTC');
   const [tradeSymbolStock, setTradeSymbolStock] = useState('AAPL');
+  const [tradeSymbolRwa, setTradeSymbolRwa] = useState('GOLD');
   const [tradeViewMode, setTradeViewMode] = useState<'LIST' | 'CHART'>('LIST');
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchedSymbols, setSearchedSymbols] = useState<string[]>([]);
 
   useEffect(() => {
     setTradeViewMode('LIST');
@@ -98,19 +103,34 @@ export default function App() {
     ...holdingSymbols, 
     ...DEFAULT_CRYPTO, 
     ...DEFAULT_STOCKS, 
+    ...DEFAULT_RWA,
     ...watchlistSymbols,
     ...alertSymbols,
+    ...searchedSymbols,
     tradeSymbolCrypto, 
-    tradeSymbolStock
+    tradeSymbolStock,
+    tradeSymbolRwa
   ]));
   
   // Connect to Binance WebSocket for ultra-fast crypto prices
   const wsPrices = useWebSocketPrices(trackSymbols);
 
   // Fetch live prices every 15 seconds (primarily for stocks now, and as a fallback)
+  const pricesFetcher = async (url: string) => {
+    // Map custom RWA symbols to Yahoo Finance symbols
+    const mappedUrl = url.replace(/\bGOLD\b/g, 'GC=F').replace(/\bSLVR\b/g, 'SI=F').replace(/\bRELEST\b/g, 'VNQ');
+    const data = await apiFetch(mappedUrl).then((res) => res.json());
+    if (data.prices) {
+      if (data.prices['GC=F'] !== undefined) { data.prices['GOLD'] = data.prices['GC=F']; delete data.prices['GC=F']; }
+      if (data.prices['SI=F'] !== undefined) { data.prices['SLVR'] = data.prices['SI=F']; delete data.prices['SI=F']; }
+      if (data.prices['VNQ'] !== undefined) { data.prices['RELEST'] = data.prices['VNQ']; delete data.prices['VNQ']; }
+    }
+    return data;
+  };
+
   const { data: pricesData } = useSWR(
     trackSymbols.length > 0 ? `/api/prices?symbols=${trackSymbols.join(',')}` : null,
-    apiFetcher,
+    pricesFetcher,
     { refreshInterval: 15000 }
   );
 
@@ -325,17 +345,41 @@ export default function App() {
           <AlertsTab prices={prices} onAddSymbol={() => {}} exchangeRate={exchangeRate} currencySymbol={currencySymbol} />
         )}
 
-        {(activeTab === 'Trade Crypto' || activeTab === 'Trade Stocks') && (
+        {(activeTab === 'Trade Crypto' || activeTab === 'Trade Stocks' || activeTab === 'Trade RWA') && (
           <div className={styles.grid}>
             <div className={styles.colSpan2}>
               {tradeViewMode === 'LIST' ? (
                 <div className={`glass-panel ${styles.card} ${styles.tradeListCard}`}>
-                   <h3 className={styles.cardTitleBig}>Live Markets ({activeTab.split(' ')[1]})</h3>
-                   <p className={styles.cardDesc}>Real-time quotes powered by Yahoo Finance. Click an asset to view its chart and trade.</p>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                     <div>
+                       <h3 className={styles.cardTitleBig}>Live Markets ({activeTab.split(' ')[1]})</h3>
+                       <p className={styles.cardDesc}>Real-time quotes powered by Yahoo Finance. Click an asset to trade.</p>
+                     </div>
+                     <form onSubmit={(e) => {
+                       e.preventDefault();
+                       if (!searchQuery.trim()) return;
+                       const sym = searchQuery.trim().toUpperCase();
+                       if (!searchedSymbols.includes(sym)) {
+                         setSearchedSymbols(prev => [...prev, sym]);
+                       }
+                       setSearchQuery('');
+                     }} style={{ display: 'flex', gap: '8px' }}>
+                       <input 
+                         type="text" 
+                         value={searchQuery} 
+                         onChange={(e) => setSearchQuery(e.target.value)} 
+                         placeholder="Search Symbol (e.g. NVDA)" 
+                         className={styles.input} 
+                         style={{ marginBottom: 0, padding: '8px 12px', width: '200px' }}
+                       />
+                       <button type="submit" className={styles.btnSecondary} style={{ padding: '8px 16px' }}>Search</button>
+                     </form>
+                   </div>
                    
                    <div className={styles.marketList}>
                       {Array.from(new Set([
-                        ...(activeTab === 'Trade Crypto' ? DEFAULT_CRYPTO : DEFAULT_STOCKS),
+                        ...(activeTab === 'Trade Crypto' ? DEFAULT_CRYPTO : activeTab === 'Trade Stocks' ? DEFAULT_STOCKS : DEFAULT_RWA),
+                        ...searchedSymbols
                       ])).map((sym) => {
                         if (!sym) return null;
                         const isUp = prices[sym] ? (prices[sym].toString().charCodeAt(0) % 2 === 0) : true;
@@ -345,7 +389,8 @@ export default function App() {
                           key={sym} 
                           onClick={() => {
                             if (activeTab === 'Trade Crypto') setTradeSymbolCrypto(sym);
-                            else setTradeSymbolStock(sym);
+                            else if (activeTab === 'Trade Stocks') setTradeSymbolStock(sym);
+                            else setTradeSymbolRwa(sym);
                             setTradeViewMode('CHART');
                           }} 
                           className={styles.marketRow}
@@ -356,7 +401,7 @@ export default function App() {
                             </div>
                             <div>
                               <div className={styles.marketSymbol}>{sym}</div>
-                              <div className={styles.marketType}>{activeTab === 'Trade Crypto' ? 'Crypto' : 'Stock'}</div>
+                              <div className={styles.marketType}>{activeTab.split(' ')[1]}</div>
                             </div>
                           </div>
                           <div className={styles.marketPriceArea}>
@@ -377,7 +422,7 @@ export default function App() {
                   >
                     ← Back to Markets
                   </button>
-                  <TrendChart symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock} />
+                  <TrendChart symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : activeTab === 'Trade Stocks' ? tradeSymbolStock : tradeSymbolRwa} />
                 </div>
               )}
             </div>
@@ -386,8 +431,8 @@ export default function App() {
                 <TradeWidget 
                   fiatBalance={fiatBalance * exchangeRate}
                   prices={prices}
-                  symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : tradeSymbolStock}
-                  setSymbol={activeTab === 'Trade Crypto' ? setTradeSymbolCrypto : setTradeSymbolStock}
+                  symbol={activeTab === 'Trade Crypto' ? tradeSymbolCrypto : activeTab === 'Trade Stocks' ? tradeSymbolStock : tradeSymbolRwa}
+                  setSymbol={activeTab === 'Trade Crypto' ? setTradeSymbolCrypto : activeTab === 'Trade Stocks' ? setTradeSymbolStock : setTradeSymbolRwa}
                   onTradeSuccess={() => { mutatePortfolio(); mutateTransactions(); }}
                   currencySymbol={currencySymbol}
                   exchangeRate={exchangeRate}
