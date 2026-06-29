@@ -1,10 +1,17 @@
 import React from 'react';
 import useSWR from 'swr';
 import { Loader2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { getAuthToken } from '@/lib/api';
 import styles from '../app/page.module.css';
 
 // Using standard fetch since this route is hosted on Next.js directly
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = async (url: string) => {
+  const token = getAuthToken();
+  const headers = new Headers();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const res = await fetch(url, { headers });
+  return res.json();
+};
 
 export default function AdminTransactions() {
   const { data, error, isLoading } = useSWR('/api/admin/transactions', fetcher);
