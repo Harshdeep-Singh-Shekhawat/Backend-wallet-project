@@ -26,7 +26,7 @@ import styles from './page.module.css';
 
 const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
 const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
-const DEFAULT_RWA = ['GOLD', 'SLVR', 'RELEST'];
+const DEFAULT_RWA = ['GOLD', 'SLVR', 'RELEST', 'OIL', 'COPR', 'PLAT', 'NGAS', 'CORN'];
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', EUR: '€', GBP: '£', JPY: '¥', INR: '₹'
@@ -118,12 +118,25 @@ export default function App() {
   // Fetch live prices every 15 seconds (primarily for stocks now, and as a fallback)
   const pricesFetcher = async (url: string) => {
     // Map custom RWA symbols to Yahoo Finance symbols
-    const mappedUrl = url.replace(/\bGOLD\b/g, 'GC=F').replace(/\bSLVR\b/g, 'SI=F').replace(/\bRELEST\b/g, 'VNQ');
+    const mappedUrl = url
+      .replace(/\bGOLD\b/g, 'GC=F')
+      .replace(/\bSLVR\b/g, 'SI=F')
+      .replace(/\bRELEST\b/g, 'VNQ')
+      .replace(/\bOIL\b/g, 'CL=F')
+      .replace(/\bCOPR\b/g, 'HG=F')
+      .replace(/\bPLAT\b/g, 'PL=F')
+      .replace(/\bNGAS\b/g, 'NG=F')
+      .replace(/\bCORN\b/g, 'ZC=F');
     const data = await apiFetch(mappedUrl).then((res) => res.json());
     if (data.prices) {
       if (data.prices['GC=F'] !== undefined) { data.prices['GOLD'] = data.prices['GC=F']; delete data.prices['GC=F']; }
       if (data.prices['SI=F'] !== undefined) { data.prices['SLVR'] = data.prices['SI=F']; delete data.prices['SI=F']; }
       if (data.prices['VNQ'] !== undefined) { data.prices['RELEST'] = data.prices['VNQ']; delete data.prices['VNQ']; }
+      if (data.prices['CL=F'] !== undefined) { data.prices['OIL'] = data.prices['CL=F']; delete data.prices['CL=F']; }
+      if (data.prices['HG=F'] !== undefined) { data.prices['COPR'] = data.prices['HG=F']; delete data.prices['HG=F']; }
+      if (data.prices['PL=F'] !== undefined) { data.prices['PLAT'] = data.prices['PL=F']; delete data.prices['PL=F']; }
+      if (data.prices['NG=F'] !== undefined) { data.prices['NGAS'] = data.prices['NG=F']; delete data.prices['NG=F']; }
+      if (data.prices['ZC=F'] !== undefined) { data.prices['CORN'] = data.prices['ZC=F']; delete data.prices['ZC=F']; }
     }
     return data;
   };

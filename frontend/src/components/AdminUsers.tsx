@@ -87,7 +87,7 @@ export default function AdminUsers() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <h3 className={styles.cardTitleBig}>{selectedUser.name}</h3>
-              <p className={styles.cardDesc}>{selectedUser.email} • Joined {new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+              <p className={styles.cardDesc}>{selectedUser.email} • Joined {new Date(selectedUser.createdAt).toLocaleString()}</p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 600, background: selectedUser.status === 'ACTIVE' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(231, 76, 60, 0.2)', color: selectedUser.status === 'ACTIVE' ? '#2ecc71' : '#e74c3c' }}>
@@ -242,7 +242,7 @@ export default function AdminUsers() {
                         <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{user.email}</div>
                       </td>
                       <td style={{ padding: '16px', color: 'var(--color-text-secondary)' }}>
-                        {new Date(user.createdAt).toLocaleDateString()}
+                        {new Date(user.createdAt).toLocaleString()}
                       </td>
                       <td style={{ padding: '16px', fontWeight: 500 }}>
                         ${user.fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

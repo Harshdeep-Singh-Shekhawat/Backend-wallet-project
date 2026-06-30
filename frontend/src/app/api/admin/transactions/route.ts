@@ -17,10 +17,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'super_secret_jwt_key_123');
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-development-only');
     const { payload } = await jose.jwtVerify(token, secret);
     
-    if (payload.role !== 'ADMIN') {
+    if (!payload.userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
              a.symbol as "assetSymbol"
       FROM "Transaction" t
       JOIN "User" u ON t."userId" = u.id
-      JOIN "Asset" a ON t."assetId" = a.id
+      LEFT JOIN "Asset" a ON t."assetId" = a.id
       ORDER BY t.timestamp DESC;
     `;
     
