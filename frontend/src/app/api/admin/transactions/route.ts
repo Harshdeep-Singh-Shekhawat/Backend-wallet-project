@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 import { cookies } from 'next/headers';
-import * as jose from 'jose';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -17,10 +16,19 @@ export async function GET(request: Request) {
   }
 
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-development-only');
-    const { payload } = await jose.jwtVerify(token, secret);
-    
-    if (!payload.userId) {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const authRes = await fetch(`${backendUrl}/api/auth/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!authRes.ok) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const authData = await authRes.json();
+    if (!authData.authenticated || authData.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -47,6 +55,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ transactions: res.rows });
   } catch (error) {
     console.error('Admin Transactions Route Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', details: String(error) }, { status: 500 });
   }
 }
