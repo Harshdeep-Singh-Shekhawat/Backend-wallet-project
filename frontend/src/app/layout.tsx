@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NeoTrade | Consumer Trading",
+  title: "Strike | Consumer Trading",
   description: "A friendly and accessible trading platform.",
 };
 

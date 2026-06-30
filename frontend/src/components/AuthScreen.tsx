@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 import { apiFetch, API_URL, setAuthToken } from '@/lib/api';
 import styles from './AuthScreen.module.css';
 
@@ -149,9 +149,10 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
     <div className={styles.container}>
       <div className={`glass-panel ${styles.card}`}>
         <div className={styles.header}>
+          <div className={styles.logoIcon} style={{ background: 'var(--color-accent)', padding: '6px', borderRadius: '8px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 'fit-content', margin: '0 auto 1rem' }}><Zap size={24} fill="currentColor" /></div>
           <h2 className={styles.title}>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
           <p className={styles.subtitle}>
-            {isLogin ? 'Enter your details to access your portfolio.' : 'Sign up to start trading on NeoTrade.'}
+            {isLogin ? 'Enter your details to access your portfolio.' : 'Sign up to start trading on Strike.'}
           </p>
         </div>
 
