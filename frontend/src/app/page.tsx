@@ -28,6 +28,17 @@ const DEFAULT_CRYPTO = ['BTC', 'ETH', 'SOL', 'DOGE', 'ADA'];
 const DEFAULT_STOCKS = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL'];
 const DEFAULT_RWA = ['GOLD', 'SLVR', 'RELEST', 'OIL', 'COPR', 'PLAT', 'NGAS', 'CORN'];
 
+const RWA_UNITS: Record<string, string> = {
+  GOLD: 'per Troy Ounce',
+  SLVR: 'per Troy Ounce',
+  RELEST: 'per Share',
+  OIL: 'per Barrel',
+  COPR: 'per Pound',
+  PLAT: 'per Troy Ounce',
+  NGAS: 'per MMBtu',
+  CORN: 'per Bushel'
+};
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', EUR: '€', GBP: '£', JPY: '¥', INR: '₹'
 };
@@ -414,7 +425,9 @@ export default function App() {
                             </div>
                             <div>
                               <div className={styles.marketSymbol}>{sym}</div>
-                              <div className={styles.marketType}>{activeTab.split(' ')[1]}</div>
+                              <div className={styles.marketType}>
+                                {activeTab === 'Trade RWA' && RWA_UNITS[sym] ? `RWA (${RWA_UNITS[sym]})` : activeTab.split(' ')[1]}
+                              </div>
                             </div>
                           </div>
                           <div className={styles.marketPriceArea}>
@@ -450,6 +463,7 @@ export default function App() {
                   currencySymbol={currencySymbol}
                   exchangeRate={exchangeRate}
                   userRole={userRole}
+                  unitLabel={activeTab === 'Trade RWA' ? RWA_UNITS[tradeSymbolRwa] : undefined}
                 />
               </div>
             </div>

@@ -15,9 +15,10 @@ interface TradeWidgetProps {
   currencySymbol: string;
   exchangeRate: number;
   userRole?: string;
+  unitLabel?: string;
 }
 
-export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, onTradeSuccess, currencySymbol, exchangeRate, userRole }: TradeWidgetProps) {
+export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, onTradeSuccess, currencySymbol, exchangeRate, userRole, unitLabel }: TradeWidgetProps) {
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL'>('BUY');
   const [inputType, setInputType] = useState<'QUANTITY' | 'AMOUNT'>('QUANTITY');
   const [inputValue, setInputValue] = useState('');
@@ -105,7 +106,7 @@ export default function TradeWidget({ fiatBalance, prices, symbol, setSymbol, on
     <div className={`glass-panel ${styles.widget}`}>
       
       <div className={styles.header}>
-        <h3 className={styles.title}>Trade {symbol}</h3>
+        <h3 className={styles.title}>Trade {symbol} {unitLabel && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>({unitLabel})</span>}</h3>
         <div className={styles.availableBadge}>
           Available: <span className={styles.availableAmount}>{currencySymbol}{fiatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
