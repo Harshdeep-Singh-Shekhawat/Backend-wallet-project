@@ -149,7 +149,7 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
     <div className={styles.container}>
       <div className={`glass-panel ${styles.card}`}>
         <div className={styles.header}>
-          <div className={styles.logoIcon} style={{ background: 'var(--color-accent)', padding: '6px', borderRadius: '8px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 'fit-content', margin: '0 auto 1rem' }}><Zap size={24} fill="currentColor" /></div>
+          <div className={styles.logoIcon} style={{ background: 'var(--color-accent)', padding: '6px', borderRadius: '8px', color: 'var(--color-accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 'fit-content', margin: '0 auto 1rem' }}><Zap size={24} fill="currentColor" /></div>
           <h2 className={styles.title}>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
           <p className={styles.subtitle}>
             {isLogin ? 'Enter your details to access your portfolio.' : 'Sign up to start trading on Strike.'}

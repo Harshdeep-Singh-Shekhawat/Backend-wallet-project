@@ -53,7 +53,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, use
       <aside className={styles.sidebar}>
         <div className={styles.logoArea} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className={styles.logoIcon} style={{ background: 'var(--color-accent)', padding: '6px', borderRadius: '8px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Zap size={20} fill="currentColor" /></div>
+            <div className={styles.logoIcon} style={{ background: 'var(--color-accent)', padding: '6px', borderRadius: '8px', color: 'var(--color-accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Zap size={20} fill="currentColor" /></div>
             <span className={styles.logoText}>Strike</span>
           </div>
           <button 
